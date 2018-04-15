@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Michael Grosser</title>
+    <link>https://www.michaelgrosser.com/</link>
+    <description>Recent content on Michael Grosser</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://www.michaelgrosser.com/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About</title>
+      <link>https://www.michaelgrosser.com/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.michaelgrosser.com/about/</guid>
+      <description>About I&amp;rsquo;m a software engineer in Chicago, IL. I&amp;rsquo;m currently the VP of Engineering at Neighborhoods.com. I really like solving hard problems around high availability systems, distributed systems, scaling, and performance.
+Technical Skills Languages: PHP, JavaScript, Python, SQL, Swift, BASH, C/C++
+Databases: MySQL, PostgreSQL, MSSQL, DynamoDB, MongoDB
+DevOps Tools: Amazon Web Services, Docker, Terraform, Ansible, Packer, Jenkins CI
+Concepts: Application Architecture, Immutable Infrastructure, High Availability, Distributed Systems, Infrastructure Architecture, Cloud Computing</description>
+    </item>
+    
+  </channel>
+</rss>
