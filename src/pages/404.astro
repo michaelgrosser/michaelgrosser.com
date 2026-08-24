@@ -1,0 +1,43 @@
+---
+/**
+ * Served by Cloudflare's asset layer for anything that matches no file, which keeps bot
+ * probes off the Worker entirely. See the `assets` block in wrangler.jsonc.
+ *
+ * Deliberately spare: nav, one statement, a way back. No form, so it pulls in no
+ * client JavaScript beyond the menu toggle the nav already needs.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+import { site } from '../data/site';
+---
+
+<BaseLayout title={`Page not found — ${site.name}`} description="That page does not exist." noindex>
+  <section class="missing">
+    <div class="container missing__inner">
+      <p class="type-mono type-mono-tracked">Error 404</p>
+      <h1 class="type-heading">This page doesn&rsquo;t exist.</h1>
+      <p class="type-body missing__copy">
+        The address may be mistyped, or the link that sent you here may be out of date.
+      </p>
+      <div>
+        <Button href="/">Back to the homepage</Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .missing {
+    padding-block: var(--section-padding-block);
+  }
+
+  .missing__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .missing__copy {
+    max-width: var(--measure-narrow);
+  }
+</style>

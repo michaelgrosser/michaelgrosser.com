@@ -38,7 +38,14 @@ export function serveDir(dir, port = 0) {
       res.writeHead(200, { 'content-type': MIME[extname(file)] ?? 'application/octet-stream' });
       res.end(body);
     } catch {
-      res.writeHead(404).end('not found');
+      // Mirrors Cloudflare's not_found_handling: "404-page".
+      try {
+        const fallback = await readFile(join(dir, '404.html'));
+        res.writeHead(404, { 'content-type': MIME['.html'] });
+        res.end(fallback);
+      } catch {
+        res.writeHead(404).end('not found');
+      }
     }
   });
 

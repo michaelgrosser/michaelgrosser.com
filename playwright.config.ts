@@ -17,7 +17,9 @@ export default defineConfig({
   webServer: {
     command: `npm run build && node scripts/serve-dist.mjs ${PORT}`,
     url: `http://127.0.0.1:${PORT}/`,
-    reuseExistingServer: !process.env.CI,
+    // Always start fresh. Reusing a server left over from an earlier build silently
+    // tests stale output, which can hide a break as easily as invent one.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

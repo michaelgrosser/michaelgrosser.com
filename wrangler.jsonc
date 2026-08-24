@@ -13,12 +13,19 @@
   // for search engines to index and for anyone to link to.
   "workers_dev": false,
 
-  // Static Astro output is served from the edge; the Worker only sees /api/contact
-  // and requests that match no asset.
+  // Static Astro output is served from the edge, and the asset layer answers first.
+  //
+  // `404-page` keeps unmatched paths — /wp-admin, /.env, every bot probe — on the free
+  // asset path instead of spending a Worker invocation to say "not found".
+  //
+  // That alone would swallow /api/contact too, since it matches no asset, so
+  // `run_worker_first` carves out the one path that must reach the Worker. It is listed
+  // exactly rather than as /api/*, so probes at other /api paths stay free as well.
   "assets": {
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "none",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/contact"],
   },
 
   // Non-secret configuration. TURNSTILE_SECRET_KEY and RESEND_API_KEY are secrets: they
