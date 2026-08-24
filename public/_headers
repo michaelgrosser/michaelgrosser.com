@@ -1,0 +1,29 @@
+# Response headers for Cloudflare Workers Static Assets.
+# Worker responses (/api/*) set their own headers in worker/index.ts.
+#
+# style-src carries 'unsafe-inline' only because the Turnstile script styles its own
+# widget container in this document; Cloudflare documents it as a requirement. The site
+# itself emits no inline styles (astro.config.mjs sets inlineStylesheets: 'never'), so
+# nothing else depends on it — drop it if Turnstile ever stops needing it.
+
+/*
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; upgrade-insecure-requests
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Permissions-Policy: accelerometer=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# Hashed filenames — safe to cache forever.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Font filenames encode family and weight; replacing a face means a new filename.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate

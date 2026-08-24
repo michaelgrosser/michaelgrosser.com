@@ -1,0 +1,24 @@
+---
+import { site } from '../data/site';
+---
+
+<footer class="footer">
+  <div class="container footer__row">
+    <p class="type-mono">{site.name}</p>
+    <p class="type-mono">&copy; {site.copyrightYear}</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--color-surface);
+    border-top: var(--border-width-hairline) solid var(--color-border);
+    padding-block: var(--space-8);
+  }
+
+  .footer__row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+</style>

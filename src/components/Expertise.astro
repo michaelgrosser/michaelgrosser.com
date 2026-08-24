@@ -1,0 +1,38 @@
+---
+/** 02 / Expertise — marks only; the product name lives in each SVG's title. */
+import TechLogo from './TechLogo.astro';
+import { techLogos } from '../data/expertise';
+---
+
+<section id="technical" class="expertise" aria-labelledby="expertise-heading">
+  <div class="container expertise__inner">
+    <div class="section-rule">
+      <h2 class="type-mono type-mono-tracked" id="expertise-heading">02 / Expertise</h2>
+      <span class="section-rule__line"></span>
+    </div>
+
+    <div class="expertise__row">
+      {techLogos.map((logo) => <TechLogo icon={logo.icon} name={logo.name} accent={logo.accent} />)}
+    </div>
+  </div>
+</section>
+
+<style>
+  .expertise {
+    padding-block: var(--section-padding-block) 0;
+  }
+
+  .expertise__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+  }
+
+  .expertise__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-14);
+    padding-block: var(--space-2) var(--space-1);
+  }
+</style>

@@ -1,0 +1,350 @@
+---
+/**
+ * Contact form. Posts JSON to the Worker at /api/contact.
+ *
+ * Turnstile needs a site key at build time. `PUBLIC_TURNSTILE_SITE_KEY` is public by
+ * design (the secret half lives in Cloudflare); when it is missing the build falls back
+ * to Cloudflare's documented always-passes test key and warns, which fails closed in
+ * production because the real secret will reject those tokens. See README.md § Contact.
+ */
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import { CONTACT_LIMITS, HONEYPOT_FIELD } from '../data/contact';
+
+const TURNSTILE_TEST_SITE_KEY = '1x00000000000000000000AA';
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? TURNSTILE_TEST_SITE_KEY;
+
+if (import.meta.env.PROD && turnstileSiteKey === TURNSTILE_TEST_SITE_KEY) {
+  console.warn(
+    [
+      '',
+      '  ############################################################',
+      '  #  PUBLIC_TURNSTILE_SITE_KEY is not set.                   #',
+      '  #  Building with the Turnstile TEST key, which the         #',
+      '  #  production secret rejects: every real submission would  #',
+      '  #  fail. Fine for tests, never for a deploy.               #',
+      '  #  `npm run deploy` refuses this build (check-release).    #',
+      '  ############################################################',
+      '',
+    ].join(String.fromCharCode(10)),
+  );
+}
+---
+
+<form class="form" method="post" novalidate data-contact-form>
+  <div class="form__body" data-form-body>
+    <div class="form__row">
+      <div class="field">
+        <label class="type-mono type-mono-label" for="contact-name">Name</label>
+        <input
+          class="field__control"
+          id="contact-name"
+          name="name"
+          type="text"
+          autocomplete="name"
+          maxlength={CONTACT_LIMITS.name}
+          required
+          aria-describedby="contact-name-error"
+        />
+        <p class="field__error" id="contact-name-error" hidden></p>
+      </div>
+
+      <div class="field">
+        <label class="type-mono type-mono-label" for="contact-email">Email</label>
+        <input
+          class="field__control"
+          id="contact-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          maxlength={CONTACT_LIMITS.email}
+          required
+          aria-describedby="contact-email-error"
+        />
+        <p class="field__error" id="contact-email-error" hidden></p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="type-mono type-mono-label" for="contact-message">Message</label>
+      <textarea
+        class="field__control field__control--message"
+        id="contact-message"
+        name="message"
+        rows="5"
+        maxlength={CONTACT_LIMITS.message}
+        required
+        aria-describedby="contact-message-error"></textarea>
+      <p class="field__error" id="contact-message-error" hidden></p>
+    </div>
+
+    <div class="form__honeypot" aria-hidden="true">
+      <label for="contact-subject">Subject</label>
+      <input
+        id="contact-subject"
+        name={HONEYPOT_FIELD}
+        type="text"
+        tabindex="-1"
+        autocomplete="off"
+      />
+    </div>
+
+    <p class="form__status" role="alert" tabindex="-1" data-form-error hidden></p>
+
+    <div class="form__submit">
+      <Button type="submit" size="submit" data-form-submit>
+        <span data-submit-label>Send</span>
+        <Icon name="paper-plane-tilt" size={18} />
+      </Button>
+
+      {/* Sits beside the button so a zero-height widget cannot alter the form's rhythm. */}
+      <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-appearance="interaction-only">
+      </div>
+    </div>
+
+    <noscript>
+      <p class="type-body form__noscript">
+        Sending this form needs JavaScript. The email button in this section works either way.
+      </p>
+    </noscript>
+  </div>
+
+  {/* Focused on success: a live region alone is not a reliable announcement. */}
+  <p class="type-body form__success" role="status" tabindex="-1" data-form-success hidden>
+    Thanks &mdash; your message is on its way. I&rsquo;ll reply to the address you gave.
+  </p>
+</form>
+
+<script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
+
+<script>
+  import {
+    CONTACT_ENDPOINT,
+    CONTACT_MESSAGES,
+    HONEYPOT_FIELD,
+    type ContactResponse,
+  } from '../data/contact';
+
+  type FieldName = 'name' | 'email' | 'message';
+  const FIELDS: readonly FieldName[] = ['name', 'email', 'message'];
+
+  // Deliberately permissive: the Worker is the authority, this only catches typos.
+  const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+
+  if (form) {
+    const body = form.querySelector<HTMLElement>('[data-form-body]');
+    const success = form.querySelector<HTMLElement>('[data-form-success]');
+    const formError = form.querySelector<HTMLElement>('[data-form-error]');
+    const submit = form.querySelector<HTMLButtonElement>('[data-form-submit]');
+    const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]');
+
+    const control = (field: string) =>
+      form.elements.namedItem(field) as HTMLInputElement | HTMLTextAreaElement | null;
+
+    const setFieldError = (field: FieldName, message?: string) => {
+      const input = control(field);
+      const error = document.getElementById(`contact-${field}-error`);
+      if (!input || !error) return;
+      error.textContent = message ?? '';
+      error.hidden = !message;
+      input.setAttribute('aria-invalid', message ? 'true' : 'false');
+    };
+
+    const clearErrors = () => {
+      FIELDS.forEach((field) => setFieldError(field));
+      if (formError) {
+        formError.hidden = true;
+        formError.textContent = '';
+      }
+    };
+
+    const validate = () => {
+      const invalid: FieldName[] = [];
+
+      FIELDS.forEach((field) => {
+        const value = control(field)?.value.trim() ?? '';
+        if (!value) {
+          setFieldError(field, CONTACT_MESSAGES[field]);
+          invalid.push(field);
+        } else if (field === 'email' && !EMAIL_PATTERN.test(value)) {
+          setFieldError(field, CONTACT_MESSAGES.email);
+          invalid.push(field);
+        }
+      });
+
+      return invalid;
+    };
+
+    /*
+     * `aria-disabled`, not `disabled`: disabling the focused button drops focus to
+     * <body>, which strands anyone submitting from the keyboard.
+     */
+    let pending = false;
+
+    const setPending = (value: boolean) => {
+      pending = value;
+      submit?.setAttribute('aria-disabled', String(value));
+      if (submitLabel) submitLabel.textContent = value ? 'Sending' : 'Send';
+    };
+
+    // Unhide before writing: a live region mutated while display:none may go unannounced.
+    const fail = (message: string) => {
+      if (!formError) return;
+      formError.hidden = false;
+      formError.textContent = message;
+      formError.focus();
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (pending) return;
+      clearErrors();
+
+      const invalid = validate();
+      if (invalid.length > 0) {
+        control(invalid[0])?.focus();
+        return;
+      }
+
+      const payload: Record<string, string> = {
+        name: control('name')?.value ?? '',
+        email: control('email')?.value ?? '',
+        message: control('message')?.value ?? '',
+        [HONEYPOT_FIELD]: control(HONEYPOT_FIELD)?.value ?? '',
+        token: control('cf-turnstile-response')?.value ?? '',
+      };
+
+      setPending(true);
+
+      try {
+        const response = await fetch(CONTACT_ENDPOINT, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const result = (await response.json().catch(() => null)) as ContactResponse | null;
+
+        if (response.ok && result?.ok) {
+          if (body) body.hidden = true;
+          if (success) {
+            success.hidden = false;
+            success.focus();
+          }
+          return;
+        }
+
+        // Field values are never cleared: a failed send must not cost the visitor their text.
+        const entries =
+          result && !result.ok && result.fields
+            ? (Object.entries(result.fields) as [FieldName, string][])
+            : [];
+
+        entries.forEach(([field, message]) => setFieldError(field, message));
+
+        if (entries.length > 0) {
+          // The field messages say everything; a banner on top would contradict them.
+          control(entries[0]![0])?.focus();
+        } else {
+          fail(
+            result && !result.ok && result.error === 'challenge'
+              ? CONTACT_MESSAGES.challenge
+              : CONTACT_MESSAGES.failed,
+          );
+        }
+      } catch {
+        fail(CONTACT_MESSAGES.failed);
+      } finally {
+        setPending(false);
+        window.turnstile?.reset();
+      }
+    });
+  }
+</script>
+
+<style>
+  .form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .form__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .field__control {
+    width: 100%;
+    padding: var(--input-padding-block) var(--input-padding-inline);
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: var(--border-width-hairline) solid var(--color-border-control);
+    border-radius: var(--radius-md);
+    transition: border-color var(--duration-immediate) var(--easing);
+  }
+
+  .field__control--message {
+    resize: vertical;
+  }
+
+  .field__control[aria-invalid='true'] {
+    border-color: var(--color-error);
+  }
+
+  .field__error,
+  .form__status {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-lede);
+    color: var(--color-error);
+  }
+
+  .form__submit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  /* Before the Turnstile script runs there is nothing to show. */
+  .cf-turnstile:empty {
+    display: none;
+  }
+
+  .form__honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .form__noscript {
+    margin: 0;
+  }
+
+  .form__success {
+    color: var(--color-text);
+  }
+
+  @media (max-width: 700px) {
+    .form__row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

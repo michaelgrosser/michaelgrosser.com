@@ -1,0 +1,67 @@
+---
+/**
+ * Inline UI icon (Phosphor Regular, plus the Simple Icons GitHub mark).
+ *
+ * The SVG is inlined rather than referenced so it inherits `currentColor` and costs
+ * no extra request. Icons here are decorative: every control that uses one carries
+ * its own accessible name.
+ */
+const icons = import.meta.glob('../icons/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
+/** Only these sizes have CSS; adding one means adding a rule below. */
+export type IconSize = 18 | 20 | 22 | 24;
+
+interface Props {
+  name: string;
+  size?: IconSize;
+  class?: string;
+}
+
+const { name, size = 22, class: className } = Astro.props;
+const markup = icons[`../icons/${name}.svg`];
+
+if (!markup) {
+  throw new Error(`Unknown icon "${name}". Add src/icons/${name}.svg or fix the name.`);
+}
+---
+
+<span class:list={['icon', className]} data-size={size} aria-hidden="true" set:html={markup} />
+
+<style>
+  .icon {
+    display: inline-flex;
+    flex: none;
+  }
+
+  /*
+   * Sized with attribute selectors rather than an inline style so the page needs no
+   * `style-src 'unsafe-inline'` in its Content-Security-Policy.
+   */
+  .icon > :global(svg) {
+    fill: currentColor;
+  }
+
+  .icon[data-size='18'] > :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .icon[data-size='20'] > :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  .icon[data-size='22'] > :global(svg) {
+    width: 22px;
+    height: 22px;
+  }
+
+  .icon[data-size='24'] > :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+</style>

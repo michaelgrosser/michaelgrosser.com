@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Experience from '../components/Experience.astro';
+import Expertise from '../components/Expertise.astro';
+import Education from '../components/Education.astro';
+import Contact from '../components/Contact.astro';
+import { site } from '../data/site';
+---
+
+<BaseLayout title={`${site.name} — ${site.role}`}>
+  <Hero />
+  <Experience />
+  <Expertise />
+  <Education />
+  <Contact />
+</BaseLayout>

@@ -1,0 +1,61 @@
+---
+/**
+ * A single technology mark in 02 / Expertise.
+ *
+ * Simple Icons ship a `<title>` inside the SVG, which gives the mark its accessible
+ * name; it is rewritten here so the OpenJDK artwork can be announced as "Java".
+ */
+const logos = import.meta.glob('../icons/tech/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
+interface Props {
+  icon: string;
+  name: string;
+  accent?: boolean;
+}
+
+const { icon, name, accent = false } = Astro.props;
+const source = logos[`../icons/tech/${icon}.svg`];
+
+if (!source) {
+  throw new Error(`Unknown technology mark "${icon}". Add src/icons/tech/${icon}.svg.`);
+}
+
+const markup = source.replace(/<title>[\s\S]*?<\/title>/, `<title>${name}</title>`);
+---
+
+<span
+  class:list={['logo', { 'logo--accent': accent }]}
+  title={name}
+  data-review="logo"
+  set:html={markup}
+/>
+
+<style>
+  .logo {
+    display: inline-flex;
+    color: var(--color-text-secondary);
+    opacity: var(--logo-opacity);
+    transition:
+      opacity var(--duration-logo) var(--easing),
+      transform var(--duration-logo) var(--easing);
+  }
+
+  .logo:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+
+  .logo--accent {
+    color: var(--color-accent);
+  }
+
+  .logo > :global(svg) {
+    height: var(--logo-height);
+    width: auto;
+    fill: currentColor;
+  }
+</style>

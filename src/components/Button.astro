@@ -1,0 +1,62 @@
+---
+/**
+ * The one filled button in the system. Renders an anchor when given `href`,
+ * a real button otherwise.
+ */
+interface Props {
+  href?: string;
+  type?: 'button' | 'submit';
+  size?: 'default' | 'submit';
+  class?: string;
+  [key: string]: unknown;
+}
+
+const { href, type = 'button', size = 'default', class: className, ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  class:list={['button', `button--${size}`, className]}
+  href={href}
+  type={href ? undefined : type}
+  {...rest}
+>
+  <slot />
+</Tag>
+
+<style>
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
+    border: 0;
+    border-radius: var(--radius-md);
+    font-size: var(--text-control);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+    transition: background var(--duration-immediate) var(--easing);
+  }
+
+  .button:hover {
+    background: var(--color-accent-hover);
+    color: var(--color-text-on-accent);
+  }
+
+  .button[aria-disabled='true'] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .button--default {
+    padding: var(--button-padding-block) var(--button-padding-inline);
+  }
+
+  .button--submit {
+    align-self: flex-start;
+    gap: var(--submit-gap);
+    padding: var(--submit-padding-block) var(--submit-padding-inline);
+  }
+</style>

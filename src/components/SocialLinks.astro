@@ -1,0 +1,44 @@
+---
+/**
+ * The row of social/contact icon buttons.
+ *
+ * `layout="contents"` dissolves the wrapper so the buttons become direct children of
+ * the surrounding flex row — the hero action row spaces and wraps them itself.
+ */
+import IconButton from './IconButton.astro';
+import { socialLinks } from '../data/site';
+
+interface Props {
+  variant?: 'accent' | 'plain';
+  layout?: 'row' | 'contents';
+}
+
+const { variant = 'plain', layout = 'row' } = Astro.props;
+---
+
+<div class:list={['social', `social--${layout}`]}>
+  {
+    socialLinks.map((link) => (
+      <IconButton
+        href={link.href}
+        label={link.label}
+        title={link.title}
+        icon={link.icon}
+        size={link.size}
+        variant={variant}
+      />
+    ))
+  }
+</div>
+
+<style>
+  .social--row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .social--contents {
+    display: contents;
+  }
+</style>
