@@ -15,13 +15,23 @@ interface Props {
 }
 
 const { href, label, title, icon, size = 22, variant = 'plain' } = Astro.props;
+
+/*
+ * Profiles open in a new tab so the page is not lost; `mailto:` does not, because a
+ * blank tab that immediately hands off to a mail client is just a flash of nothing.
+ * The accessible name says so — these controls have no visible text to carry the hint.
+ */
+const external = href.startsWith('http');
+const accessibleLabel = external ? `${label} (opens in a new tab)` : label;
 ---
 
 <a
   class:list={['icon-button', `icon-button--${variant}`]}
   href={href}
-  aria-label={label}
+  aria-label={accessibleLabel}
   title={title}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
   data-review="icon-button"
 >
   <Icon name={icon} size={size} />

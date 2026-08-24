@@ -26,6 +26,22 @@ test('renders the page and every section', async ({ page }) => {
   await expect(page.getByRole('img', { name: 'Portrait of Michael Grosser' })).toBeVisible();
 });
 
+test('profile links open in a new tab, the email link does not', async ({ page }) => {
+  await page.goto('/');
+
+  const profiles = page.locator('a[data-review="icon-button"][href^="http"]');
+  await expect(profiles).toHaveCount(6); // three profiles, in the hero and in contact
+
+  for (const link of await profiles.all()) {
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', /noopener/);
+    await expect(link).toHaveAccessibleName(/opens in a new tab/);
+  }
+
+  const email = page.locator('a[data-review="icon-button"][href^="mailto:"]').first();
+  await expect(email).not.toHaveAttribute('target', '_blank');
+});
+
 test('primary navigation moves to the requested section', async ({ page }) => {
   await page.goto('/');
 
