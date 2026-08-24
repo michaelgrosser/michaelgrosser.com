@@ -1,0 +1,68 @@
+---
+/**
+ * A 46x46 icon-only link. `variant="accent"` is the treatment used on the tinted
+ * hero band; `variant="plain"` is the one used on white surfaces.
+ */
+import Icon, { type IconSize } from './Icon.astro';
+
+interface Props {
+  href: string;
+  label: string;
+  title?: string;
+  icon: string;
+  size?: IconSize;
+  variant?: 'accent' | 'plain';
+}
+
+const { href, label, title, icon, size = 22, variant = 'plain' } = Astro.props;
+
+/*
+ * Profiles open in a new tab so the page is not lost; `mailto:` does not, because a
+ * blank tab that immediately hands off to a mail client is just a flash of nothing.
+ * The accessible name says so — these controls have no visible text to carry the hint.
+ */
+const external = href.startsWith('http');
+const accessibleLabel = external ? `${label} (opens in a new tab)` : label;
+---
+
+<a
+  class:list={['icon-button', `icon-button--${variant}`]}
+  href={href}
+  aria-label={accessibleLabel}
+  title={title}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+  data-review="icon-button"
+>
+  <Icon name={icon} size={size} />
+</a>
+
+<style>
+  .icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-size);
+    height: var(--control-size);
+    border: var(--border-width-hairline) solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition:
+      border-color var(--duration-immediate) var(--easing),
+      transform var(--duration-immediate) var(--easing);
+  }
+
+  .icon-button:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .icon-button--plain {
+    color: var(--color-text);
+  }
+
+  .icon-button--accent {
+    background: var(--color-surface);
+    border-color: var(--color-border-accent-subtle);
+    color: var(--color-text-accent);
+  }
+</style>

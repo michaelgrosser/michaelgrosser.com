@@ -1,0 +1,10 @@
+# Keep LF in the working tree on every platform. Prettier is configured for LF, so a
+# CRLF checkout on Windows would fail `npm run format:check` on a clean clone.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff2 binary
+*.pdf binary

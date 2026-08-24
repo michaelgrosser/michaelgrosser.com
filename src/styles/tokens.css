@@ -1,0 +1,183 @@
+/*
+ * Design tokens — the single source of truth for every reusable visual value.
+ *
+ * Two layers:
+ *   1. Palette / raw scale values. Never reference these from a component.
+ *   2. Semantic tokens. Components use only these.
+ *
+ * Values come from docs/ui/README.md and docs/ui/reference/Personal Site Design System.md.
+ * Do not tune a token to fix one component.
+ */
+
+:root {
+  /* ---------- 1. Palette (do not use directly outside this file) ---------- */
+  --palette-canvas: #f7f8fa;
+  --palette-white: #ffffff;
+  --palette-mist: #f0f2f5;
+
+  --palette-ink: #17191d;
+  --palette-slate: #626a75;
+  /*
+   * Darkened from the design system's #8A929D, which measured 2.8-3.1:1 against the
+   * page's backgrounds and failed WCAG 1.4.3 at the sizes it is used. #686E76 is the
+   * lightest value on the same hue that reaches 4.5:1 on canvas and surface.
+   */
+  --palette-steel: #686e76;
+
+  --palette-line: #dde1e6;
+  --palette-line-strong: #c8ced6;
+  /* Dark enough to satisfy WCAG 1.4.11 where a border is a control's only boundary. */
+  --palette-line-control: #868e99;
+
+  --palette-oxide-50: #f8eeeb;
+  --palette-oxide-100: #f1ddd7;
+  --palette-oxide-500: #b64834;
+  --palette-oxide-600: #9e3c2c;
+  --palette-oxide-700: #803126;
+
+  /* ---------- 2. Semantic color ---------- */
+  --color-background: var(--palette-canvas);
+  --color-surface: var(--palette-white);
+  --color-surface-subtle: var(--palette-mist);
+  /* Sticky nav: white at 92% over a blurred backdrop. */
+  --color-surface-translucent: rgb(255 255 255 / 0.92);
+  /* Tinted surface: the hero band and every hover tint. */
+  --color-surface-accent: var(--palette-oxide-50);
+
+  --color-text: var(--palette-ink);
+  --color-text-secondary: var(--palette-slate);
+  --color-text-muted: var(--palette-steel);
+  --color-text-on-accent: var(--palette-white);
+  /* Accent text/glyphs sitting on --color-surface-accent. */
+  --color-text-accent: var(--palette-oxide-700);
+
+  --color-border: var(--palette-line);
+  --color-border-strong: var(--palette-line-strong);
+  /*
+   * Form controls only. A white input on a white surface has nothing but its border to
+   * mark where the control is, so that border carries a 3:1 requirement the decorative
+   * hairlines do not. Everything else keeps --color-border.
+   */
+  --color-border-control: var(--palette-line-control);
+  /* Border for controls sitting on the tinted hero band. */
+  --color-border-accent-subtle: var(--palette-oxide-100);
+
+  --color-accent: var(--palette-oxide-500);
+  --color-accent-hover: var(--palette-oxide-600);
+  --color-accent-strong: var(--palette-oxide-700);
+
+  --color-focus-ring: var(--palette-oxide-500);
+  --color-error: var(--palette-oxide-700);
+
+  /* ---------- 3. Typography ---------- */
+  --font-sans: 'Encode Sans Semi Expanded', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Fira Mono', ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Size / line-height / tracking travel together; see typography.css. */
+  --text-display: 60px;
+  --text-display-compact: 40px;
+  --text-heading: 38px;
+  --text-numeral: 46px;
+  --text-numeral-compact: 32px;
+  --text-title: 24px;
+  --text-subtitle: 20px;
+  --text-lede: 20px;
+  --text-body: 17px;
+  --text-control: 16px;
+  --text-brand: 16px;
+  --text-nav: 15px;
+  --text-meta: 12px;
+  --text-label: 11px;
+
+  --leading-display: 1.04;
+  --leading-heading: 1.08;
+  --leading-tight: 1.2;
+  --leading-numeral: 1;
+  --leading-lede: 1.6;
+  --leading-body: 1.62;
+
+  --tracking-display: -0.025em;
+  --tracking-title: -0.015em;
+  --tracking-subtitle: -0.01em;
+  --tracking-meta: 0.06em;
+  --tracking-label: 0.08em;
+  --tracking-eyebrow: 0.1em;
+
+  /* ---------- 4. Spacing (4px base scale) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --space-18: 72px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ---------- 5. Layout ---------- */
+  --container-max: 1100px;
+  --container-padding: var(--space-8);
+  --container-padding-compact: var(--space-6);
+  --section-padding-block: var(--space-24);
+  --measure-lede: 620px;
+  --measure-body: 680px;
+  --measure-narrow: 420px;
+  --portrait-width: 300px;
+  --portrait-width-compact: 260px;
+  --portrait-overhang: 128px;
+  --timeline-column: 200px;
+  --timeline-column-compact: 120px;
+  --control-size: 46px;
+  /* Clearance so in-page anchors do not land under the sticky nav. */
+  --scroll-offset: 88px;
+  --logo-height: 38px;
+  /* 0.76, not the prototype's 0.72: the marks are section 02's only content and need 3:1. */
+  --logo-opacity: 0.76;
+
+  /*
+   * Control metrics. These sit deliberately off the 4px scale — they are the exact
+   * values in docs/ui/README.md, kept here so no component hard-codes them.
+   */
+  --input-padding-block: 14px;
+  --input-padding-inline: 16px;
+  --button-padding-block: 13px;
+  --button-padding-inline: 24px;
+  --submit-padding-block: 14px;
+  --submit-padding-inline: 26px;
+  --submit-gap: 10px;
+  --menu-link-padding-block: 14px;
+  /* 15px/normal line box + 2 x 13px = the 44px minimum tap target. */
+  --nav-link-padding-block: 13px;
+  --credential-padding-top: 20px;
+
+  /* ---------- 6. Shape ---------- */
+  --border-width-hairline: 1px;
+  --border-width-rule: 2px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --blur-nav: 8px;
+
+  /* ---------- 7. Motion ---------- */
+  --duration-immediate: 160ms;
+  --duration-standard: 220ms;
+  --duration-logo: 200ms;
+  --easing: ease;
+
+  /* ---------- 8. Breakpoints (documentation; media queries cannot read custom
+   * properties, so these values are repeated literally in the @media rules that
+   * need them: 1000px, 760px, 700px.) ---------- */
+  --breakpoint-lg: 1000px;
+  --breakpoint-md: 760px;
+  --breakpoint-sm: 700px;
+}

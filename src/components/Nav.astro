@@ -1,0 +1,197 @@
+---
+/**
+ * Sticky primary navigation.
+ *
+ * Both link lists live in the DOM; CSS decides which one is shown at a given width,
+ * so the mobile panel needs no framework — just an `aria-expanded` toggle.
+ */
+import Icon from './Icon.astro';
+import { navLinks, site } from '../data/site';
+---
+
+<header class="nav">
+  <nav aria-label="Primary">
+    <div class="container nav__bar">
+      <a class="nav__brand" href="#top">{site.name}</a>
+
+      <ul class="nav__links">
+        {
+          navLinks.map((link) => (
+            <li>
+              <a class:list={['nav__link', { 'nav__link--accent': link.accent }]} href={link.href}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <button
+        class="nav__toggle"
+        type="button"
+        aria-label="Menu"
+        aria-expanded="false"
+        aria-controls="nav-menu"
+        data-nav-toggle
+      >
+        <Icon name="list" size={24} class="nav__toggle-icon nav__toggle-icon--closed" />
+        <Icon name="x" size={22} class="nav__toggle-icon nav__toggle-icon--open" />
+      </button>
+    </div>
+
+    <div class="nav__menu" id="nav-menu" data-nav-menu hidden>
+      <ul class="container nav__menu-list">
+        {
+          navLinks.map((link) => (
+            <li>
+              <a
+                class:list={['nav__menu-link', { 'nav__menu-link--accent': link.accent }]}
+                href={link.href}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<script>
+  import '../scripts/nav';
+</script>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-surface-translucent);
+    backdrop-filter: blur(var(--blur-nav));
+    border-bottom: var(--border-width-hairline) solid var(--color-border);
+  }
+
+  .nav__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--space-5);
+  }
+
+  .nav__brand {
+    font-size: var(--text-brand);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-subtitle);
+    color: var(--color-text);
+  }
+
+  .nav__brand:hover {
+    color: var(--color-text);
+  }
+
+  .nav__links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav__link {
+    /* Padding/negative-margin pair keeps a 44px tap target without growing the bar. */
+    display: block;
+    padding-block: var(--nav-link-padding-block);
+    margin-block: calc(-1 * var(--nav-link-padding-block));
+    font-size: var(--text-nav);
+    font-weight: var(--weight-medium);
+    color: var(--color-text-secondary);
+  }
+
+  .nav__link:hover {
+    color: var(--color-text);
+  }
+
+  .nav__link--accent {
+    color: var(--color-accent);
+  }
+
+  .nav__link--accent:hover {
+    color: var(--color-accent-strong);
+  }
+
+  .nav__toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-size);
+    height: var(--control-size);
+    padding: 0;
+    background: transparent;
+    color: var(--color-text);
+    border: var(--border-width-hairline) solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color var(--duration-immediate) var(--easing);
+  }
+
+  .nav__toggle:hover {
+    border-color: var(--color-accent);
+  }
+
+  /*
+   * :global is required — the icon span is rendered by Icon.astro, so it carries that
+   * component's scope attribute rather than this one's.
+   */
+  .nav__toggle[aria-expanded='false'] :global(.nav__toggle-icon--open),
+  .nav__toggle[aria-expanded='true'] :global(.nav__toggle-icon--closed) {
+    display: none;
+  }
+
+  .nav__menu {
+    border-top: var(--border-width-hairline) solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  .nav__menu-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding-block: var(--space-2) var(--space-5);
+    list-style: none;
+  }
+
+  .nav__menu-link {
+    display: block;
+    padding-block: var(--menu-link-padding-block);
+    font-size: var(--text-body);
+    font-weight: var(--weight-medium);
+    color: var(--color-text);
+    border-bottom: var(--border-width-hairline) solid var(--color-surface-subtle);
+  }
+
+  .nav__menu-list li:last-child .nav__menu-link {
+    border-bottom: 0;
+  }
+
+  .nav__menu-link--accent {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 760px) {
+    .nav__links {
+      display: none;
+    }
+
+    .nav__toggle {
+      display: flex;
+    }
+  }
+
+  @media (min-width: 761px) {
+    .nav__menu {
+      display: none;
+    }
+  }
+</style>

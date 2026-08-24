@@ -1,0 +1,136 @@
+---
+/** Hero band: the only tinted full-bleed surface on the page. */
+import { Picture } from 'astro:assets';
+import Button from './Button.astro';
+import SocialLinks from './SocialLinks.astro';
+import portrait from '../assets/portrait.jpg';
+import { site } from '../data/site';
+---
+
+<section id="top" class="hero">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="type-mono type-mono-tracked hero__eyebrow">
+        Software Engineering Leader · Chicago, IL
+      </p>
+      <h1 class="type-display">{site.name}</h1>
+      <p class="type-lede hero__intro">
+        I&rsquo;m a principal software engineer who enjoys turning complicated systems into
+        something simpler, faster, and easier to build on. I&rsquo;ve spent 20+ years working across
+        hands-on engineering, architecture, and technical leadership.
+      </p>
+      <div class="hero__actions">
+        <Button href="#contact" data-review="primary-button">Get in touch</Button>
+        <SocialLinks variant="accent" layout="contents" />
+      </div>
+    </div>
+
+    <Picture
+      pictureAttributes={{ class: 'hero__portrait' }}
+      class="hero__portrait-image"
+      src={portrait}
+      alt={`Portrait of ${site.name}`}
+      widths={[260, 300, 320, 520, 600, 640]}
+      sizes="(max-width: 700px) 320px, (max-width: 1000px) 260px, 300px"
+      formats={['avif', 'webp']}
+      fallbackFormat="jpg"
+      loading="eager"
+      fetchpriority="high"
+    />
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: var(--color-surface-accent);
+    padding-block: var(--space-24) var(--space-16);
+  }
+
+  .hero__grid {
+    display: grid;
+    grid-template-columns: 1fr var(--portrait-width);
+    gap: var(--space-16);
+    align-items: end;
+  }
+
+  .hero__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .hero__eyebrow {
+    color: var(--color-text-accent);
+  }
+
+  .hero__intro {
+    max-width: var(--measure-lede);
+  }
+
+  .hero__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    padding-top: var(--space-2);
+  }
+
+  /*
+   * <Picture> renders <picture><source…><img>. The <picture> is the grid item, so it
+   * carries the layout; the <img> carries the crop and the treatment.
+   */
+  .hero__portrait {
+    display: block;
+    width: var(--portrait-width);
+    /* The portrait overhangs into the section below — the page's one asymmetric move. */
+    margin-bottom: calc(-1 * var(--portrait-overhang));
+  }
+
+  .hero__portrait-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    object-position: 50% 20%;
+    border-radius: var(--radius-xl);
+    filter: saturate(0.9);
+  }
+
+  @media (max-width: 1000px) {
+    .hero__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-10);
+    }
+
+    .hero__portrait {
+      width: var(--portrait-width-compact);
+      margin-bottom: 0;
+      order: -1;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .hero {
+      --container-padding: var(--container-padding-compact);
+
+      padding-block: var(--space-18) var(--space-12);
+    }
+
+    .hero__grid {
+      gap: var(--space-8);
+    }
+
+    .hero__portrait {
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .hero__portrait-image {
+      aspect-ratio: 4 / 5;
+    }
+
+    .hero__actions {
+      flex-wrap: wrap;
+      gap: var(--space-4);
+    }
+  }
+</style>

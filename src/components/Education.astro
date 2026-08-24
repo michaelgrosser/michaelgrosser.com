@@ -1,0 +1,78 @@
+---
+/** 03 / Education & Certification. */
+import { credentials } from '../data/education';
+---
+
+<section id="education" class="education" aria-labelledby="education-heading">
+  <div class="container education__inner">
+    <div class="section-rule education__header">
+      <h2 class="type-mono type-mono-tracked" id="education-heading">
+        03 / Education &amp; Certification
+      </h2>
+      <span class="section-rule__line"></span>
+    </div>
+
+    <ul class="education__pair">
+      {
+        credentials.map((item) => (
+          <li class="credential" data-review="education-item">
+            <p class="type-mono">{item.range}</p>
+            <h3 class="type-subtitle">{item.title}</h3>
+            {item.detail && <p class="type-body credential__detail">{item.detail}</p>}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .education {
+    padding-block: var(--section-padding-block);
+  }
+
+  .education__inner {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .education__header {
+    margin-bottom: var(--space-8);
+  }
+
+  .education__pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .credential {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--credential-padding-top) var(--space-4) var(--space-4);
+    border-top: var(--border-width-rule) solid var(--color-text);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    transition:
+      background var(--duration-standard) var(--easing),
+      border-color var(--duration-standard) var(--easing);
+  }
+
+  .credential:hover {
+    background: var(--color-surface-accent);
+    border-top-color: var(--color-accent);
+  }
+
+  .credential__detail {
+    line-height: var(--leading-lede);
+  }
+
+  @media (max-width: 700px) {
+    .education__pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

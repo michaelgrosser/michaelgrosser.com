@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "michaelgrosser-com",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-01",
+
+  // Static Astro output is served from the edge; the Worker only sees /api/contact
+  // and requests that match no asset.
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none",
+  },
+
+  // Non-secret configuration. TURNSTILE_SECRET_KEY is a secret and lives in
+  // Cloudflare: `npx wrangler secret put TURNSTILE_SECRET_KEY`.
+  //
+  // Sender and recipient are the same address on purpose: it is the one address this
+  // site publishes, and the visitor's address goes in Reply-To rather than From.
+  "vars": {
+    "CONTACT_FROM": "michael@michaelgrosser.com",
+    "CONTACT_TO": "michael@michaelgrosser.com",
+  },
+
+  // Cloudflare Email. The destination must be a verified address in Email Routing.
+  "send_email": [
+    {
+      "name": "CONTACT_EMAIL",
+      "destination_address": "michael@michaelgrosser.com",
+    },
+  ],
+
+  "observability": {
+    "enabled": true,
+  },
+}

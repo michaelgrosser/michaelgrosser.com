@@ -1,0 +1,41 @@
+{
+  "name": "michaelgrosser-com",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Personal CV and contact site for Michael Grosser.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "astro check && tsc --noEmit -p tsconfig.worker.json",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "review": "node scripts/review/capture.mjs",
+    "check:release": "node scripts/check-release.mjs",
+    "deploy": "npm run build && npm run check:release && wrangler deploy"
+  },
+  "dependencies": {
+    "astro": "^7.2.6",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
+    "@cloudflare/workers-types": "^5.20260823.1",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "eslint": "^10.9.0",
+    "eslint-plugin-astro": "^1.7.0",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.68.0",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.125.0"
+  }
+}

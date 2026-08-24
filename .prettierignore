@@ -1,0 +1,14 @@
+dist/
+.astro/
+.review/
+node_modules/
+package-lock.json
+
+# Reference material and vendored assets are kept byte-for-byte as supplied.
+docs/
+public/fonts/
+src/icons/
+
+# Instruction files owned by the repo, not code to reformat.
+CLAUDE.md
+.claude/

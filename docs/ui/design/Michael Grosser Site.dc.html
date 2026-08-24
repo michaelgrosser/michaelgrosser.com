@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Encode+Sans+Semi+Expanded:wght@400;500;600;700&amp;family=Fira+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #F7F8FA; font-family: 'Encode Sans Semi Expanded', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #17191D; }
+  a { color: #B64834; text-decoration: none; }
+  a:hover { color: #803126; }
+  input, textarea, button { font-family: inherit; }
+  input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid #B64834; outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 1000px) {
+    [data-r="hero"] { grid-template-columns: 1fr !important; gap: 40px !important; }
+    [data-r="portrait"] { width: 260px !important; margin-bottom: 0 !important; order: -1; }
+    [data-r="ai"] { grid-template-columns: 1fr !important; gap: 32px !important; padding: 36px !important; }
+    [data-r="contact"] { grid-template-columns: 1fr !important; gap: 48px !important; }
+    [data-r="techrow"] { grid-template-columns: 1fr !important; gap: 16px !important; }
+    [data-r="role"] { grid-template-columns: 120px 1fr !important; }
+    [data-r="role"] > div:first-child { font-size: 32px !important; }
+  }
+  @media (max-width: 760px) {
+    [data-r="navlinks"] { display: none !important; }
+    [data-r="hamburger"] { display: flex !important; }
+  }
+  @media (max-width: 700px) {
+    h1 { font-size: 40px !important; }
+    [data-r="herosection"] { padding: 72px 24px 48px !important; }
+    [data-r="hero"] { gap: 32px !important; }
+    [data-r="portrait"] { width: 100% !important; max-width: 320px !important; aspect-ratio: 4 / 5 !important; }
+    [data-r="heroactions"] { flex-wrap: wrap !important; gap: 16px !important; }
+    [data-r="pair"] { grid-template-columns: 1fr !important; }
+    [data-r="role"] { grid-template-columns: 1fr !important; gap: 12px; }
+    [data-r="role"] > div:last-child { padding-left: 20px !important; }
+  }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #F7F8FA;">
+  <div style="position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid #DDE1E6;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between;">
+      <a href="#top" style="font-size: 16px; font-weight: 600; letter-spacing: -0.01em; color: #17191D;">Michael Grosser</a>
+      <div data-r="navlinks" style="display: flex; gap: 32px; font-size: 15px; font-weight: 500;">
+        <a href="#experience" style="color: #626A75; transition: color 160ms ease;" style-hover="color: #17191D;">Experience</a>
+        <a href="#technical" style="color: #626A75; transition: color 160ms ease;" style-hover="color: #17191D;">Expertise</a>
+        <a href="#education" style="color: #626A75; transition: color 160ms ease;" style-hover="color: #17191D;">Education</a>
+        <a href="#contact" style="color: #B64834; transition: color 160ms ease;" style-hover="color: #803126;">Contact</a>
+      </div>
+      <button data-r="hamburger" type="button" onClick="{{ toggleMenu }}" aria-label="Menu" aria-expanded="{{ menuOpen }}" style="display: none; width: 46px; height: 46px; align-items: center; justify-content: center; background: transparent; border: 1px solid #DDE1E6; border-radius: 10px; cursor: pointer; transition: border-color 160ms ease;" style-hover="border-color: #B64834;">
+        <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="width: 22px; height: 22px; display: block; background-color: #17191D; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/x.svg); mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/x.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></sc-if>
+        <sc-if value="{{ menuClosed }}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="width: 24px; height: 24px; display: block; background-color: #17191D; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/list.svg); mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/list.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></sc-if>
+      </button>
+    </div>
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top: 1px solid #DDE1E6; background: #FFFFFF; padding: 8px 32px 20px; display: flex; flex-direction: column;">
+        <a href="#experience" onClick="{{ closeMenu }}" style="font-size: 17px; font-weight: 500; color: #17191D; padding: 14px 0; border-bottom: 1px solid #F0F2F5;">Experience</a>
+        <a href="#technical" onClick="{{ closeMenu }}" style="font-size: 17px; font-weight: 500; color: #17191D; padding: 14px 0; border-bottom: 1px solid #F0F2F5;">Expertise</a>
+        <a href="#education" onClick="{{ closeMenu }}" style="font-size: 17px; font-weight: 500; color: #17191D; padding: 14px 0; border-bottom: 1px solid #F0F2F5;">Education</a>
+        <a href="#contact" onClick="{{ closeMenu }}" style="font-size: 17px; font-weight: 500; color: #B64834; padding: 14px 0;">Contact</a>
+      </div>
+    </sc-if>
+  </div>
+
+  <div id="top" data-r="herosection" style="background: #F8EEEB; padding: 96px 32px 64px;">
+    <div data-r="hero" style="max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 300px; gap: 64px; align-items: end;">
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #803126;">SOFTWARE ENGINEERING LEADER · CHICAGO, IL</div>
+        <h1 style="margin: 0; font-size: 60px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.04; color: #17191D;">Michael Grosser</h1>
+        <p style="margin: 0; font-size: 20px; line-height: 1.6; color: #626A75; max-width: 620px; text-wrap: pretty;">I’m a principal software engineer who enjoys turning complicated systems into something simpler, faster, and easier to build on. I’ve spent 20+ years working across hands-on engineering, architecture, and technical leadership.&nbsp;</p>
+        <div data-r="heroactions" style="display: flex; gap: 24px; align-items: center; padding-top: 8px;">
+          <a href="#contact" style="font-size: 16px; font-weight: 500; color: #FFFFFF; background: #B64834; border-radius: 10px; padding: 13px 24px; transition: background 160ms ease;" style-hover="background: #9E3C2C; color: #FFFFFF;">Get in touch</a>
+          <a href="mailto:michael@michaelgrosser.com" aria-label="Email michael@michaelgrosser.com" title="michael@michaelgrosser.com" style="width: 46px; height: 46px; border: 1px solid #F1DDD7; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #FFFFFF; transition: border-color 160ms ease, transform 160ms ease;" style-hover="border-color: #B64834; transform: translateY(-2px);"><span aria-hidden="true" style="width: 22px; height: 22px; display: block; background-color: #803126; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/envelope-simple.svg); mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/envelope-simple.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></a>
+          <a href="https://www.linkedin.com/in/michaelgrosser" aria-label="LinkedIn" title="LinkedIn" style="width: 46px; height: 46px; border: 1px solid #F1DDD7; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #FFFFFF; transition: border-color 160ms ease, transform 160ms ease;" style-hover="border-color: #B64834; transform: translateY(-2px);"><span aria-hidden="true" style="width: 22px; height: 22px; display: block; background-color: #803126; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/linkedin-logo.svg); mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/linkedin-logo.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></a>
+          <a href="https://x.com/michaelgrosser" aria-label="X, @michaelgrosser" title="@michaelgrosser" style="width: 46px; height: 46px; border: 1px solid #F1DDD7; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #FFFFFF; transition: border-color 160ms ease, transform 160ms ease;" style-hover="border-color: #B64834; transform: translateY(-2px);"><span aria-hidden="true" style="width: 20px; height: 20px; display: block; background-color: #803126; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/x-logo.svg); mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/x-logo.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></a>
+          <a href="https://github.com/michaelgrosser" aria-label="GitHub" title="GitHub" style="width: 46px; height: 46px; border: 1px solid #F1DDD7; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #FFFFFF; transition: border-color 160ms ease, transform 160ms ease;" style-hover="border-color: #B64834; transform: translateY(-2px);"><span aria-hidden="true" style="width: 22px; height: 22px; display: block; background-color: #803126; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/simple-icons@13/icons/github.svg); mask-image: url(https://cdn.jsdelivr.net/npm/simple-icons@13/icons/github.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></a>
+        </div>
+      </div>
+      <img data-r="portrait" src="photo.png" alt="Portrait of Michael Grosser" style="width: 300px; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 20%; border-radius: 16px; display: block; margin-bottom: -128px; filter: saturate(0.9);">
+    </div>
+  </div>
+
+  <div id="experience" style="padding: 96px 32px 0;">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      <div style="display: flex; align-items: baseline; gap: 16px; margin-bottom: 40px;">
+        <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #8A929D;">01 / EXPERIENCE</div>
+        <div style="flex: 1; height: 1px; background: #DDE1E6;"></div>
+        <div style="font-family: 'Fira Mono', monospace; font-size: 12px; color: #8A929D;">2010 — PRESENT</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column;">
+        <div data-r="role" style="display: grid; grid-template-columns: 200px 1fr; padding: 20px 20px 20px 0; margin-left: -20px; border-radius: 10px; transition: background 220ms ease, transform 220ms ease;" style-hover="background: #F8EEEB; transform: translateX(4px);">
+          <div style="font-size: 46px; font-weight: 600; letter-spacing: -0.025em; color: #17191D; line-height: 1; padding-left: 20px;">2024</div>
+          <div style="padding-left: 40px; border-left: 1px solid #DDE1E6; display: flex; flex-direction: column; gap: 12px; position: relative;">
+            <div style="position: absolute; left: -4px; top: 8px; width: 7px; height: 7px; background: #B64834; border-radius: 6px;"></div>
+            <div style="font-size: 24px; font-weight: 600; letter-spacing: -0.015em; color: #17191D;">Principal Software Engineer, Toast Tables</div>
+            <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #8A929D;">TOAST · PRESENT</div>
+            <p style="margin: 0; font-size: 17px; line-height: 1.62; color: #626A75; max-width: 680px; text-wrap: pretty;">Principal Software Engineer for the Toast Tables Reservations &amp; Waitlist platform, working across backend, frontend, and infrastructure.&nbsp;</p>
+          </div>
+        </div>
+
+        <div data-r="role" style="display: grid; grid-template-columns: 200px 1fr; padding: 20px 20px 20px 0; margin-left: -20px; border-radius: 10px; transition: background 220ms ease, transform 220ms ease;" style-hover="background: #F8EEEB; transform: translateX(4px);">
+          <div style="font-size: 46px; font-weight: 600; letter-spacing: -0.025em; color: #17191D; line-height: 1; padding-left: 20px;">2022</div>
+          <div style="padding-left: 40px; border-left: 1px solid #DDE1E6; display: flex; flex-direction: column; gap: 12px; position: relative;">
+            <div style="position: absolute; left: -4px; top: 8px; width: 7px; height: 7px; background: #C8CED6; border-radius: 6px;"></div>
+            <div style="font-size: 24px; font-weight: 600; letter-spacing: -0.015em; color: #17191D;">Principal Engineer / Sr. Engineering Manager, Guest Platform</div>
+            <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #8A929D;">TOAST · 2022 — 2024</div>
+            <p style="margin: 0; font-size: 17px; line-height: 1.62; color: #626A75; max-width: 680px; text-wrap: pretty;">Tech lead manager for the Digital Ordering Platform, specializing in designing re-usable systems for Online Ordering and other guest-facing services.</p>
+          </div>
+        </div>
+
+        <div data-r="role" style="display: grid; grid-template-columns: 200px 1fr; padding: 20px 20px 20px 0; margin-left: -20px; border-radius: 10px; transition: background 220ms ease, transform 220ms ease;" style-hover="background: #F8EEEB; transform: translateX(4px);">
+          <div style="font-size: 46px; font-weight: 600; letter-spacing: -0.025em; color: #17191D; line-height: 1; padding-left: 20px;">2021</div>
+          <div style="padding-left: 40px; border-left: 1px solid #DDE1E6; display: flex; flex-direction: column; gap: 12px; position: relative;">
+            <div style="position: absolute; left: -4px; top: 8px; width: 7px; height: 7px; background: #C8CED6; border-radius: 6px;"></div>
+            <div style="font-size: 24px; font-weight: 600; letter-spacing: -0.015em; color: #17191D;">Consultant, Enterprise Architecture</div>
+            <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #8A929D;">INSPIRE11 · 2021 — 2022</div>
+            <p style="margin: 0; font-size: 17px; line-height: 1.62; color: #626A75; max-width: 680px; text-wrap: pretty;">Consulted with Enterprise clients to design their migrations from on prem to the cloud.&nbsp;</p>
+          </div>
+        </div>
+
+        <div data-r="role" style="display: grid; grid-template-columns: 200px 1fr; padding: 20px 20px 20px 0; margin-left: -20px; border-radius: 10px; transition: background 220ms ease, transform 220ms ease;" style-hover="background: #F8EEEB; transform: translateX(4px);">
+          <div style="font-size: 46px; font-weight: 600; letter-spacing: -0.025em; color: #17191D; line-height: 1; padding-left: 20px;">2015</div>
+          <div style="padding-left: 40px; border-left: 1px solid #DDE1E6; display: flex; flex-direction: column; gap: 12px; position: relative;">
+            <div style="position: absolute; left: -4px; top: 8px; width: 7px; height: 7px; background: #C8CED6; border-radius: 6px;"></div>
+            <div style="font-size: 24px; font-weight: 600; letter-spacing: -0.015em; color: #17191D;">Vice President of Engineering</div>
+            <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #8A929D;">NEIGHBORHOODS.COM · 2015 — 2021</div>
+            <p style="margin: 0; font-size: 17px; line-height: 1.62; color: #626A75; max-width: 680px; text-wrap: pretty;">Built the internal engineering organization to 30+ people across backend, frontend, DevOps, data science and QA, and designed the cloud-native platform behind ~10M listings and ~100M parcel records.</p>
+          </div>
+        </div>
+
+        <div data-r="role" style="display: grid; grid-template-columns: 200px 1fr; padding: 20px 20px 20px 0; margin-left: -20px; border-radius: 10px; transition: background 220ms ease, transform 220ms ease;" style-hover="background: #F8EEEB; transform: translateX(4px);">
+          <div style="font-size: 46px; font-weight: 600; letter-spacing: -0.025em; color: #17191D; line-height: 1; padding-left: 20px;">2010</div>
+          <div style="padding-left: 40px; border-left: 1px solid #DDE1E6; display: flex; flex-direction: column; gap: 12px; position: relative;">
+            <div style="position: absolute; left: -4px; top: 8px; width: 7px; height: 7px; background: #C8CED6; border-radius: 6px;"></div>
+            <div style="font-size: 24px; font-weight: 600; letter-spacing: -0.015em; color: #17191D;">Practice Director, eCommerce · Sr. Technical Architect</div>
+            <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #8A929D;">GORILLA GROUP · 2010 — 2015</div>
+            <p style="margin: 0; font-size: 17px; line-height: 1.62; color: #626A75; max-width: 680px; text-wrap: pretty;">Architectural lead for high-volume B2B and B2C commerce platforms, and for the practice's move to cloud-based hosting and reproducible developer environments.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="technical" style="padding: 96px 32px 0;">
+    <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px;">
+      <div style="display: flex; align-items: baseline; gap: 16px;">
+        <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #8A929D;">02 / EXPERTISE</div>
+        <div style="flex: 1; height: 1px; background: #DDE1E6;"></div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 56px; padding: 8px 0 4px;">
+        <img src="https://cdn.simpleicons.org/claude/B64834" alt="Claude" title="Claude" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/kotlin/626A75" alt="Kotlin" title="Kotlin" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/openjdk/626A75" alt="Java" title="Java" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/typescript/626A75" alt="TypeScript" title="TypeScript" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/python/626A75" alt="Python" title="Python" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/postgresql/626A75" alt="PostgreSQL" title="PostgreSQL" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.jsdelivr.net/npm/simple-icons@13/icons/amazonwebservices.svg" alt="Amazon Web Services" title="Amazon Web Services" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/cloudflare/626A75" alt="Cloudflare" title="Cloudflare" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/kubernetes/626A75" alt="Kubernetes" title="Kubernetes" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/terraform/626A75" alt="Terraform" title="Terraform" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/react/626A75" alt="React" title="React" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+        <img src="https://cdn.simpleicons.org/go/626A75" alt="Go" title="Go" style="height: 38px; width: auto; display: block; opacity: 0.72; transition: opacity 200ms ease, transform 200ms ease;" style-hover="opacity: 1; transform: translateY(-2px);">
+      </div>
+    </div>
+  </div>
+
+  <div id="education" style="padding: 96px 32px;">
+    <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: baseline; gap: 16px; margin-bottom: 32px;">
+        <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #8A929D;">03 / EDUCATION &amp; CERTIFICATION</div>
+        <div style="flex: 1; height: 1px; background: #DDE1E6;"></div>
+      </div>
+      <div data-r="pair" style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 20px 16px 16px; border-top: 2px solid #17191D; border-radius: 0 0 10px 10px; transition: background 220ms ease, border-color 220ms ease;" style-hover="background: #F8EEEB; border-top-color: #B64834;">
+          <div style="font-family: 'Fira Mono', monospace; font-size: 12px; color: #8A929D;">2004 — 2009</div>
+          <div style="font-size: 20px; font-weight: 600; letter-spacing: -0.01em; color: #17191D;">Florida Gulf Coast University</div>
+          <div style="font-size: 17px; line-height: 1.6; color: #626A75;">Bachelors of Science</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 20px 16px 16px; border-top: 2px solid #17191D; border-radius: 0 0 10px 10px; transition: background 220ms ease, border-color 220ms ease;" style-hover="background: #F8EEEB; border-top-color: #B64834;">
+          <div style="font-family: 'Fira Mono', monospace; font-size: 12px; color: #8A929D;">2021 — 2024</div>
+          <div style="font-size: 20px; font-weight: 600; letter-spacing: -0.01em; color: #17191D;">AWS Certified Solutions Architect Professional</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="contact" style="background: #FFFFFF; border-top: 1px solid #DDE1E6; padding: 96px 32px;">
+    <div data-r="contact" style="max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 96px;">
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        <div style="font-family: 'Fira Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #8A929D;">04 / CONTACT</div>
+        <div style="font-size: 38px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.08; color: #17191D;">Happy to talk systems, teams, or AI-assisted delivery.</div>
+        <p style="margin: 0; font-size: 17px; line-height: 1.62; color: #626A75; max-width: 420px; text-wrap: pretty;">The form reaches me directly. I'm also easy to find in the usual places.</p>
+        
+        <div style="display: flex; gap: 12px;">
+          <a href="mailto:michael@michaelgrosser.com" aria-label="Email michael@michaelgrosser.com" title="michael@michaelgrosser.com" style="width: 46px; height: 46px; border: 1px solid #DDE1E6; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: border-color 160ms ease, transform 160ms ease;" style-hover="border-color: #B64834; transform: translateY(-2px);"><span aria-hidden="true" style="width: 22px; height: 22px; display: block; background-color: #17191D; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/envelope-simple.svg); mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/envelope-simple.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></a>
+          <a href="https://www.linkedin.com/in/michaelgrosser" aria-label="LinkedIn" title="LinkedIn" style="width: 46px; height: 46px; border: 1px solid #DDE1E6; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: border-color 160ms ease, transform 160ms ease;" style-hover="border-color: #B64834; transform: translateY(-2px);"><span aria-hidden="true" style="width: 22px; height: 22px; display: block; background-color: #17191D; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/linkedin-logo.svg); mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/linkedin-logo.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></a>
+          <a href="https://x.com/michaelgrosser" aria-label="X, @michaelgrosser" title="@michaelgrosser" style="width: 46px; height: 46px; border: 1px solid #DDE1E6; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: border-color 160ms ease, transform 160ms ease;" style-hover="border-color: #B64834; transform: translateY(-2px);"><span aria-hidden="true" style="width: 20px; height: 20px; display: block; background-color: #17191D; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/x-logo.svg); mask-image: url(https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/x-logo.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></a>
+          <a href="https://github.com/michaelgrosser" aria-label="GitHub" title="GitHub" style="width: 46px; height: 46px; border: 1px solid #DDE1E6; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: border-color 160ms ease, transform 160ms ease;" style-hover="border-color: #B64834; transform: translateY(-2px);"><span aria-hidden="true" style="width: 22px; height: 22px; display: block; background-color: #17191D; -webkit-mask-image: url(https://cdn.jsdelivr.net/npm/simple-icons@13/icons/github.svg); mask-image: url(https://cdn.jsdelivr.net/npm/simple-icons@13/icons/github.svg); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain;"></span></a>
+        </div>
+      </div>
+      <form style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label for="name" style="font-family: 'Fira Mono', monospace; font-size: 11px; letter-spacing: 0.08em; color: #8A929D;">NAME</label>
+            <input id="name" type="text" style="border: 1px solid #DDE1E6; border-radius: 10px; padding: 14px 16px; font-size: 16px; color: #17191D; background: #FFFFFF; transition: border-color 160ms ease;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label for="email" style="font-family: 'Fira Mono', monospace; font-size: 11px; letter-spacing: 0.08em; color: #8A929D;">EMAIL</label>
+            <input id="email" type="email" style="border: 1px solid #DDE1E6; border-radius: 10px; padding: 14px 16px; font-size: 16px; color: #17191D; background: #FFFFFF; transition: border-color 160ms ease;">
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label for="message" style="font-family: 'Fira Mono', monospace; font-size: 11px; letter-spacing: 0.08em; color: #8A929D;">MESSAGE</label>
+          <textarea id="message" rows="5" style="border: 1px solid #DDE1E6; border-radius: 10px; padding: 14px 16px; font-size: 16px; color: #17191D; background: #FFFFFF; resize: vertical; transition: border-color 160ms ease;"></textarea>
+        </div>
+        <button type="submit" style="align-self: flex-start; background: #B64834; color: #FFFFFF; border: none; border-radius: 10px; padding: 14px 26px; font-size: 16px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 200ms ease;" style-hover="background: #9E3C2C;">Send<span aria-hidden="true" style="width: 18px; height: 18px; display: block; background-color: rgb(255, 255, 255); mask-image: url(&quot;https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/regular/paper-plane-tilt.svg&quot;); mask-repeat: no-repeat; mask-size: contain;">nn</span></button>
+      </form>
+    </div>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #DDE1E6; padding: 32px;">
+    <div style="max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between;">
+      <div style="font-family: 'Fira Mono', monospace; font-size: 12px; color: #8A929D;">MICHAEL GROSSER</div>
+      <div style="font-family: 'Fira Mono', monospace; font-size: 12px; color: #8A929D;">© 2026</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { menuOpen: false };
+  renderVals() {
+    return {
+      menuOpen: this.state.menuOpen,
+      menuClosed: !this.state.menuOpen,
+      toggleMenu: () => this.setState(s => ({ menuOpen: !s.menuOpen })),
+      closeMenu: () => this.setState({ menuOpen: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

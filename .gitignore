@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Astro build output
+dist/
+.astro/
+.output/
+
+# Cloudflare / Wrangler
+# NOTE: wrangler.jsonc IS committed — it is non-secret deployment config.
+.wrangler/
+.dev.vars
+.dev.vars.*
+.mf/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Test & coverage output
+coverage/
+.nyc_output/
+playwright-report/
+playwright/.cache/
+blob-report/
+test-results/
+.vitest/
+
+# Logs & diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.eslintcache
+*.tsbuildinfo
+
+# Local Claude Code permissions; the agents and skills in .claude/ are shared.
+.claude/settings.local.json
+
+# Editors
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Local scratch
+tmp/
+temp/
+*.local
+
+# Self-review output
+.review/
+
+# Source resume: transcribed to docs/ui/reference/resume.md, which is the
+# committed copy. The PDF carries a personal phone number and email address and
+# must not enter this public repository.
+docs/ui/reference/*.pdf
