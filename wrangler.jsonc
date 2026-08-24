@@ -4,6 +4,15 @@
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-01",
 
+  // www is the canonical host: every canonical URL, og:url and the sitemap point at it,
+  // and the apex redirects to it with a Cloudflare redirect rule. Declaring it here means
+  // `wrangler deploy` attaches the hostname rather than someone doing it by hand.
+  "routes": [{ "pattern": "www.michaelgrosser.com", "custom_domain": true }],
+
+  // No *.workers.dev route: a second origin serving the same pages is a second thing
+  // for search engines to index and for anyone to link to.
+  "workers_dev": false,
+
   // Static Astro output is served from the edge; the Worker only sees /api/contact
   // and requests that match no asset.
   "assets": {

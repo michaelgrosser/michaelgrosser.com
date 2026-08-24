@@ -92,13 +92,57 @@ Submissions are never persisted or logged.
    visitor's address is used as `Reply-To`, never forged as `From`. The Worker refuses
    every submission while either secret is missing.
 
-3. **Deploy.** `npm run build && npx wrangler deploy`.
+3. **DNS.** `www.michaelgrosser.com` is the canonical host — every canonical URL, `og:url`
+   and the sitemap point at it. `wrangler.jsonc` declares it as a custom domain, so
+   `wrangler deploy` creates the record itself; if a `www` record already exists in
+   Cloudflare DNS, delete it first or the deploy will refuse to overwrite it.
+
+   The apex does not serve the site. Point it at www with a Cloudflare **Redirect Rule**:
+   match hostname `michaelgrosser.com`, redirect to
+   `concat("https://www.michaelgrosser.com", http.request.uri.path)`, status 301, with
+   _preserve query string_ on. A redirect rule needs something proxied on the apex to fire
+   against, so add a proxied `AAAA` record for `@` pointing at `100::` if there isn't one.
+   Neither touches the apex `MX`, so mail is unaffected.
+
+4. **Deploy.** Push to `main`. See _Deployment_ below.
 
 Security headers, including the Content-Security-Policy, are in `public/_headers`. The CSP
 allows only `self` plus `challenges.cloudflare.com`, which is why the build emits no inline
 `<style>` or `<script>`. The one concession is `'unsafe-inline'` in `style-src`: Turnstile
 styles its own widget container in this document and Cloudflare documents that as a
 requirement. Nothing else on the page relies on it.
+
+## Deployment
+
+`main` deploys itself. `.github/workflows/ci.yml` runs the five gates plus the browser
+suite on every pull request, and on a push to `main` it builds with the production
+Turnstile key, runs the release check, and calls `wrangler deploy`. Nothing deploys that
+has not passed the gates first.
+
+Configure it once, in **Settings → Secrets and variables → Actions**:
+
+| Scope                               | Name                        | Value                                                                                        |
+| ----------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
+| Repository **variable**             | `PUBLIC_TURNSTILE_SITE_KEY` | The Turnstile site key. Public, and pull-request jobs cannot read environment-scoped values. |
+| `production` environment **secret** | `CLOUDFLARE_API_TOKEN`      | An _Edit Cloudflare Workers_ token.                                                          |
+| `production` environment **secret** | `CLOUDFLARE_ACCOUNT_ID`     | Kept beside the token so deploy credentials live in one place.                               |
+
+Create the environment under **Settings → Environments**, and restrict its deployment
+branches to `main`. That is what stops a workflow on any other branch from reading the
+deploy token.
+
+The Worker's own secrets — `TURNSTILE_SECRET_KEY` and `RESEND_API_KEY` — are **not** in
+GitHub. They live in Cloudflare, survive every deploy, and are set once: either with
+`wrangler secret put`, or in the dashboard under the Worker's Settings → Variables and
+Secrets. Until both exist the form fails closed with a 500.
+
+Do not also connect Cloudflare's Workers Builds Git integration. Two pipelines watching
+`main` means every push deploys twice.
+
+Preview deployments for pull requests are not set up. `wrangler versions upload` needs the
+Worker to already exist, so it is a follow-up to the first deploy rather than part of it —
+and a preview shares the live Worker's secrets, so a form submission from one sends real
+mail.
 
 ## Self-review
 

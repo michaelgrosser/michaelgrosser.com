@@ -3,7 +3,7 @@
 export const site = {
   name: 'Michael Grosser',
   role: 'Principal Software Engineer',
-  url: 'https://michaelgrosser.com',
+  url: 'https://www.michaelgrosser.com',
   email: 'michael@michaelgrosser.com',
   description:
     'I’m a principal software engineer who enjoys turning complicated systems into something simpler, faster, and easier to build on.',

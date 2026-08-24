@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Nothing here writes to the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # A superseded pull-request run is worth cancelling. A run that may deploy is not.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: Gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+
+      # Built explicitly rather than leaving it to Playwright's webServer, so a build
+      # failure reads as a build failure instead of "webServer exited early".
+      - run: npm run build
+
+      - name: Install the browser the e2e suite drives
+        run: npx playwright install --with-deps chromium
+
+      - run: npm run test:e2e
+
+      - name: Keep the failure screenshots when the suite fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  deploy:
+    name: Deploy to Cloudflare
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    # Holds the Cloudflare credentials and restricts them to this branch.
+    environment:
+      name: production
+      url: https://www.michaelgrosser.com
+
+    # Never cancel a deploy midway; queue behind the one in flight instead.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # The site key is public, so it is a repository variable rather than a secret.
+      # Without it the build falls back to Turnstile's test key and the next step fails.
+      - name: Build
+        run: npm run build
+        env:
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
+
+      - name: Refuse a build that cannot work in production
+        run: npm run check:release
+
+      # wrangler is already a dependency; no third-party action needed to call it.
+      - name: Deploy
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
