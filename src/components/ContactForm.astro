@@ -115,13 +115,12 @@ if (import.meta.env.PROD && turnstileSiteKey === TURNSTILE_TEST_SITE_KEY) {
   </p>
 </form>
 
-<script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
-
 <script>
   import {
     CONTACT_ENDPOINT,
     CONTACT_MESSAGES,
     HONEYPOT_FIELD,
+    TURNSTILE_SCRIPT_URL,
     type ContactResponse,
   } from '../data/contact';
 
@@ -134,6 +133,32 @@ if (import.meta.env.PROD && turnstileSiteKey === TURNSTILE_TEST_SITE_KEY) {
   const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
 
   if (form) {
+    /*
+     * Turnstile pulls in a chain of a dozen third-party requests. None of it is needed
+     * until someone actually engages with the form, which is well below the fold, so the
+     * script is fetched on first contact rather than on page load.
+     */
+    let challengeRequested = false;
+    let challengeUnavailable = false;
+
+    const loadTurnstile = () => {
+      if (challengeRequested) return;
+      challengeRequested = true;
+      const script = document.createElement('script');
+      script.src = TURNSTILE_SCRIPT_URL;
+      script.async = true;
+      // Blocked by a filter or offline: fail fast rather than stalling on a token
+      // that is never coming.
+      script.addEventListener('error', () => {
+        challengeUnavailable = true;
+      });
+      document.head.append(script);
+    };
+
+    form.addEventListener('focusin', loadTurnstile);
+    form.addEventListener('input', loadTurnstile);
+    form.addEventListener('submit', loadTurnstile);
+
     const body = form.querySelector<HTMLElement>('[data-form-body]');
     const success = form.querySelector<HTMLElement>('[data-form-success]');
     const formError = form.querySelector<HTMLElement>('[data-form-error]');
@@ -190,6 +215,19 @@ if (import.meta.env.PROD && turnstileSiteKey === TURNSTILE_TEST_SITE_KEY) {
     };
 
     // Unhide before writing: a live region mutated while display:none may go unannounced.
+    /** Gives a late-loading challenge a moment to produce its token. */
+    const waitForToken = async (budgetMs = 5000) => {
+      const deadline = Date.now() + budgetMs;
+      let token = control('cf-turnstile-response')?.value ?? '';
+
+      while (!token && !challengeUnavailable && Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        token = control('cf-turnstile-response')?.value ?? '';
+      }
+
+      return token;
+    };
+
     const fail = (message: string) => {
       if (!formError) return;
       formError.hidden = false;
@@ -208,15 +246,16 @@ if (import.meta.env.PROD && turnstileSiteKey === TURNSTILE_TEST_SITE_KEY) {
         return;
       }
 
+      setPending(true);
+
       const payload: Record<string, string> = {
         name: control('name')?.value ?? '',
         email: control('email')?.value ?? '',
         message: control('message')?.value ?? '',
         [HONEYPOT_FIELD]: control(HONEYPOT_FIELD)?.value ?? '',
-        token: control('cf-turnstile-response')?.value ?? '',
+        // Deferring the script means the token may still be in flight on a fast submit.
+        token: await waitForToken(),
       };
-
-      setPending(true);
 
       try {
         const response = await fetch(CONTACT_ENDPOINT, {

@@ -7,6 +7,9 @@
 
 export const CONTACT_ENDPOINT = '/api/contact';
 
+/** Loaded on first interaction with the form, not on page load. */
+export const TURNSTILE_SCRIPT_URL = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+
 export const CONTACT_LIMITS = {
   name: 120,
   /** RFC 5321 caps an address at 254 characters. */
