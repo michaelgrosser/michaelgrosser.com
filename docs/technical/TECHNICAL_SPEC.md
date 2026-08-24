@@ -28,7 +28,11 @@ The site should:
 - **Cloudflare Workers Static Assets** for production hosting and edge delivery.
 - **Cloudflare Worker endpoint** for contact-form processing.
 - **Cloudflare Turnstile** for contact-form abuse prevention.
-- **Cloudflare Email Service** or an explicitly approved mail provider for delivery of contact submissions.
+- **Resend** for delivery of contact submissions (approved 2026-08-24, replacing Cloudflare
+  Email Service). Cloudflare Email Routing requires the zone's apex `MX` records to point at
+  Cloudflare; this domain's already point at a mailbox provider, so enabling it would break
+  inbound mail. Resend verifies sending with records scoped under `send.<domain>` and leaves
+  the apex `MX` alone.
 
 ### Avoid by Default
 

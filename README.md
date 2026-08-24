@@ -12,19 +12,19 @@ Both are authoritative — read them before changing anything visual or structur
 
 ## Commands
 
-| Command                 | What it does                                          |
-| ----------------------- | ----------------------------------------------------- |
-| `npm run dev`           | Astro dev server                                      |
-| `npm run build`         | Static build into `dist/`                             |
-| `npm run preview`       | Serve the built site                                  |
-| `npm run format:check`  | Prettier                                              |
-| `npm run lint`          | ESLint                                                |
-| `npm run typecheck`     | `astro check` plus a TypeScript pass over `worker/`   |
-| `npm run test`          | Vitest unit tests (validation, MIME building, Worker) |
-| `npm run test:e2e`      | Playwright browser tests (builds first)               |
-| `npm run review`        | Screenshot/axe sweep into `.review/` (see below)      |
-| `npm run check:release` | Refuses a build that cannot work in production        |
-| `npm run deploy`        | Build, release check, `wrangler deploy`               |
+| Command                 | What it does                                             |
+| ----------------------- | -------------------------------------------------------- |
+| `npm run dev`           | Astro dev server                                         |
+| `npm run build`         | Static build into `dist/`                                |
+| `npm run preview`       | Serve the built site                                     |
+| `npm run format:check`  | Prettier                                                 |
+| `npm run lint`          | ESLint                                                   |
+| `npm run typecheck`     | `astro check` plus a TypeScript pass over `worker/`      |
+| `npm run test`          | Vitest unit tests (validation, message building, Worker) |
+| `npm run test:e2e`      | Playwright browser tests (builds first)                  |
+| `npm run review`        | Screenshot/axe sweep into `.review/` (see below)         |
+| `npm run check:release` | Refuses a build that cannot work in production           |
+| `npm run deploy`        | Build, release check, `wrangler deploy`                  |
 
 Run the first five before calling any change done.
 
@@ -57,7 +57,7 @@ The browser posts JSON to `POST /api/contact`. The Worker:
 2. re-validates and normalizes every field, enforcing the limits in `src/data/contact.ts`;
 3. rejects a filled honeypot (answering as if it succeeded);
 4. verifies the Turnstile token server-side;
-5. sends the message through Cloudflare Email with the visitor's address as `Reply-To`;
+5. hands the message to Resend with the visitor's address as `Reply-To`;
 6. returns `{ "ok": true }` or `{ "ok": false, "error": "...", "fields": { ... } }`.
 
 Submissions are never persisted or logged.
@@ -78,11 +78,19 @@ Submissions are never persisted or logged.
    **Deploy with `npm run deploy`, not `wrangler deploy` directly**, or that check is
    skipped.
 
-2. **Email.** In Cloudflare Email Routing, verify `michael@michaelgrosser.com` as a
-   destination address so the `send_email` binding in `wrangler.jsonc` can deliver to it.
-   That address is both `CONTACT_FROM` and `CONTACT_TO` — it is the only address the site
-   publishes, and `From` must stay on a domain under site control. The visitor's address
-   is used as `Reply-To`, never forged as `From`.
+2. **Email.** Verify `michaelgrosser.com` in Resend and add the DNS records it generates:
+   an `MX` and an SPF `TXT` on `send.michaelgrosser.com`, and a DKIM `TXT` at
+   `resend._domainkey`. None of them touch the apex `MX`, so existing mail on this domain
+   is unaffected — which is why delivery does not use Cloudflare Email Routing, whose
+   `send_email` binding would require the apex `MX` to point at Cloudflare.
+
+   Then create a sending-scoped API key and store it:
+   `npx wrangler secret put RESEND_API_KEY`.
+
+   `CONTACT_FROM` and `CONTACT_TO` are both `michael@michaelgrosser.com` — the only
+   address the site publishes, and `From` has to stay on a domain under site control. The
+   visitor's address is used as `Reply-To`, never forged as `From`. The Worker refuses
+   every submission while either secret is missing.
 
 3. **Deploy.** `npm run build && npx wrangler deploy`.
 

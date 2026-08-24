@@ -8,13 +8,16 @@
   // and requests that match no asset.
   "assets": {
     "directory": "./dist",
-    "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "none",
   },
 
-  // Non-secret configuration. TURNSTILE_SECRET_KEY is a secret and lives in
-  // Cloudflare: `npx wrangler secret put TURNSTILE_SECRET_KEY`.
+  // Non-secret configuration. TURNSTILE_SECRET_KEY and RESEND_API_KEY are secrets: they
+  // live in Cloudflare, never here. `npx wrangler secret put <NAME>`, or the dashboard.
+  //
+  // Mail goes through Resend rather than Cloudflare Email, because Email Routing would
+  // require this domain's MX records to point at Cloudflare and they already point at a
+  // mailbox provider. Resend verifies sending with records under send.<domain>.
   //
   // Sender and recipient are the same address on purpose: it is the one address this
   // site publishes, and the visitor's address goes in Reply-To rather than From.
@@ -22,14 +25,6 @@
     "CONTACT_FROM": "michael@michaelgrosser.com",
     "CONTACT_TO": "michael@michaelgrosser.com",
   },
-
-  // Cloudflare Email. The destination must be a verified address in Email Routing.
-  "send_email": [
-    {
-      "name": "CONTACT_EMAIL",
-      "destination_address": "michael@michaelgrosser.com",
-    },
-  ],
 
   "observability": {
     "enabled": true,

@@ -4,18 +4,17 @@
  * Static assets are served by Cloudflare ahead of this Worker; everything that
  * reaches here is either the contact endpoint or a miss.
  */
-import { EmailMessage } from 'cloudflare:email';
-import { buildEmail, validateSubmission } from './contact';
+import { buildMessage, validateSubmission } from './contact';
 import { CONTACT_ENDPOINT, type ContactResponse } from '../src/data/contact';
 
 export interface Env {
-  /** Cloudflare Email `send_email` binding. */
-  CONTACT_EMAIL: SendEmail;
   /** Secret. Set with `wrangler secret put TURNSTILE_SECRET_KEY`. */
   TURNSTILE_SECRET_KEY?: string;
-  /** Sender address on a domain this site controls. */
+  /** Secret. Set with `wrangler secret put RESEND_API_KEY`. */
+  RESEND_API_KEY?: string;
+  /** Sender address on the domain verified with Resend. */
   CONTACT_FROM: string;
-  /** Verified destination address. */
+  /** Where submissions are delivered. */
   CONTACT_TO: string;
 }
 
@@ -23,6 +22,10 @@ export interface Env {
 const MAX_BODY_BYTES = 16 * 1024;
 
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+const RESEND_SEND_URL = 'https://api.resend.com/emails';
+
+/** A hung provider must not hold the request open indefinitely. */
+const DELIVERY_TIMEOUT_MS = 10_000;
 
 /** public/_headers covers static assets; Worker responses set their own. */
 const SECURITY_HEADERS = {
@@ -110,18 +113,37 @@ async function handleContact(request: Request, env: Env): Promise<Response> {
     return json({ ok: false, error: 'challenge' }, 403);
   }
 
-  const message = buildEmail({
-    submission: validated.value,
-    from: env.CONTACT_FROM,
-    to: env.CONTACT_TO,
-    messageId: `${crypto.randomUUID()}@${new URL(request.url).hostname}`,
-    date: new Date().toUTCString(),
-  });
+  if (!env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY is not configured; refusing to accept submissions.');
+    return json({ ok: false, error: 'server' }, 500);
+  }
+
+  const { subject, text } = buildMessage(validated.value);
 
   try {
-    await env.CONTACT_EMAIL.send(new EmailMessage(env.CONTACT_FROM, env.CONTACT_TO, message));
+    const delivery = await fetch(RESEND_SEND_URL, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: env.CONTACT_FROM,
+        to: [env.CONTACT_TO],
+        reply_to: validated.value.email,
+        subject,
+        text,
+      }),
+      signal: AbortSignal.timeout(DELIVERY_TIMEOUT_MS),
+    });
+
+    if (!delivery.ok) {
+      // Status and Resend's own error text only — never the submission.
+      console.error('resend rejected the message', delivery.status, await delivery.text());
+      return json({ ok: false, error: 'delivery' }, 502);
+    }
   } catch (error) {
-    // The message body is never logged: submissions are not retained anywhere.
+    // Submissions are not retained anywhere, so nothing from the body is logged.
     console.error('contact delivery failed', error);
     return json({ ok: false, error: 'delivery' }, 502);
   }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildEmail, validateSubmission } from '../../worker/contact';
+import { buildMessage, validateSubmission } from '../../worker/contact';
 import { CONTACT_LIMITS, CONTACT_MESSAGES, HONEYPOT_FIELD } from '../../src/data/contact';
 
 const valid = {
@@ -70,69 +70,31 @@ describe('validateSubmission', () => {
   });
 });
 
-describe('buildEmail', () => {
-  const message = buildEmail({
-    submission: { name: 'Ada Lovelace', email: 'ada@example.com', message: 'Hello there' },
-    from: 'contact@michaelgrosser.com',
-    to: 'michael@michaelgrosser.com',
-    messageId: 'test-id@michaelgrosser.com',
-    date: 'Mon, 24 Aug 2026 12:00:00 GMT',
+describe('buildMessage', () => {
+  const message = buildMessage({
+    name: 'Ada Lovelace',
+    email: 'ada@example.com',
+    message: 'Hello there',
   });
 
-  it('sends from the site and replies to the visitor', () => {
-    expect(message).toContain('From: <contact@michaelgrosser.com>');
-    expect(message).toContain('To: <michael@michaelgrosser.com>');
-    expect(message).toContain('Reply-To: <ada@example.com>');
+  it('names the sender in the subject', () => {
+    expect(message.subject).toBe('Contact form: Ada Lovelace');
   });
 
-  it('carries the required Message-ID and Date headers', () => {
-    expect(message).toContain('Message-ID: <test-id@michaelgrosser.com>');
-    expect(message).toContain('Date: Mon, 24 Aug 2026 12:00:00 GMT');
+  it('puts who wrote it above what they wrote', () => {
+    expect(message.text).toBe(
+      ['Name: Ada Lovelace', 'Email: ada@example.com', '', 'Hello there', ''].join('\n'),
+    );
   });
 
-  it('encodes the body as base64 so submitted text cannot forge a header', () => {
-    const [headers, body] = message.split('\r\n\r\n');
-    expect(headers).toContain('Content-Transfer-Encoding: base64');
-    expect(atob(body.trim())).toContain('Hello there');
-    expect(body).not.toContain('Hello there');
-  });
-
-  it('leaves an ASCII subject unencoded', () => {
-    expect(message).toContain('Subject: Contact form: Ada Lovelace');
-  });
-
-  it('folds a non-ASCII subject into RFC 2047 words under the length limit', () => {
-    const raw = buildEmail({
-      submission: {
-        name: 'Ada Lovelace \u{1F4A1} ' + 'Ää'.repeat(40),
-        email: 'ada@example.com',
-        message: 'Hi',
-      },
-      from: 'contact@michaelgrosser.com',
-      to: 'michael@michaelgrosser.com',
-      messageId: 'test-id@michaelgrosser.com',
-      date: 'Mon, 24 Aug 2026 12:00:00 GMT',
+  it('carries non-ASCII text through untouched', () => {
+    const unicode = buildMessage({
+      name: 'Ada Lovelace \u{1F4A1}',
+      email: 'ada@example.com',
+      message: 'Gruesse ä',
     });
 
-    const headers = raw.split('\r\n\r\n')[0]!.split('\r\n');
-    const first = headers.findIndex((line) => line.startsWith('Subject:'));
-    const subjectLines = [headers[first]!];
-    for (let i = first + 1; i < headers.length && headers[i]!.startsWith(' '); i++) {
-      subjectLines.push(headers[i]!);
-    }
-
-    expect(subjectLines.length).toBeGreaterThan(1);
-    for (const line of subjectLines) {
-      expect(line.length).toBeLessThanOrEqual(78);
-      expect(line.trim()).toMatch(/^(Subject: )?=\?UTF-8\?B\?[A-Za-z0-9+/=]+\?=$/);
-    }
-
-    // Each word must decode on its own: a split UTF-8 sequence would corrupt here.
-    const decoded = Buffer.concat(
-      subjectLines.map((line) =>
-        Buffer.from(/=\?UTF-8\?B\?([A-Za-z0-9+/=]+)\?=/.exec(line)![1]!, 'base64'),
-      ),
-    ).toString('utf8');
-    expect(decoded).toContain('\u{1F4A1}');
+    expect(unicode.subject).toBe('Contact form: Ada Lovelace \u{1F4A1}');
+    expect(unicode.text).toContain('ä');
   });
 });
