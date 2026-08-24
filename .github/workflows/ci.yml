@@ -59,7 +59,7 @@ jobs:
     # Holds the Cloudflare credentials and restricts them to this branch.
     environment:
       name: production
-      url: https://michaelgrosser.com
+      url: https://www.michaelgrosser.com
 
     # Never cancel a deploy midway; queue behind the one in flight instead.
     concurrency:

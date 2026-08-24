@@ -84,7 +84,19 @@ Submissions are never persisted or logged.
    publishes, and `From` must stay on a domain under site control. The visitor's address
    is used as `Reply-To`, never forged as `From`.
 
-3. **Deploy.** Push to `main`. See _Deployment_ below.
+3. **DNS.** `www.michaelgrosser.com` is the canonical host — every canonical URL, `og:url`
+   and the sitemap point at it. `wrangler.jsonc` declares it as a custom domain, so
+   `wrangler deploy` creates the record itself; if a `www` record already exists in
+   Cloudflare DNS, delete it first or the deploy will refuse to overwrite it.
+
+   The apex does not serve the site. Point it at www with a Cloudflare **Redirect Rule**:
+   match hostname `michaelgrosser.com`, redirect to
+   `concat("https://www.michaelgrosser.com", http.request.uri.path)`, status 301, with
+   _preserve query string_ on. A redirect rule needs something proxied on the apex to fire
+   against, so add a proxied `AAAA` record for `@` pointing at `100::` if there isn't one.
+   Neither touches the apex `MX`, so mail is unaffected.
+
+4. **Deploy.** Push to `main`. See _Deployment_ below.
 
 Security headers, including the Content-Security-Policy, are in `public/_headers`. The CSP
 allows only `self` plus `challenges.cloudflare.com`, which is why the build emits no inline
