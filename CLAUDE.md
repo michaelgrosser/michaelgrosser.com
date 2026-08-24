@@ -29,6 +29,10 @@ To view a prototype: `npx serve "docs/ui/design"` — `file://` will not load `s
 `03 Education & Certification` → `04 Contact` → footer. No blog, no portfolio, no project
 pages, no About page, no dark mode.
 
+Two non-content routes exist for infrastructure reasons and are not exceptions to the
+above: `sitemap.xml` and `404.astro`. The 404 page is what lets Cloudflare answer unmatched
+paths from static assets instead of spending a Worker invocation — see README § Routing.
+
 The technical spec lists possible future page categories (About, Work, case studies). Those
 are *not* in scope — build the architecture so they'd be easy to add, but don't add them.
 

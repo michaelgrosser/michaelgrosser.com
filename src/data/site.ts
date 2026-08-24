@@ -46,9 +46,13 @@ export const socialLinks: readonly SocialLink[] = [
 
 export type NavLink = { readonly href: string; readonly label: string; readonly accent?: boolean };
 
+/*
+ * Root-relative so the nav also works from the 404 page. On the home page the path
+ * already matches, so these stay same-document fragment jumps with no navigation.
+ */
 export const navLinks: readonly NavLink[] = [
-  { href: '#experience', label: 'Experience' },
-  { href: '#technical', label: 'Expertise' },
-  { href: '#education', label: 'Education' },
-  { href: '#contact', label: 'Contact', accent: true },
+  { href: '/#experience', label: 'Experience' },
+  { href: '/#technical', label: 'Expertise' },
+  { href: '/#education', label: 'Education' },
+  { href: '/#contact', label: 'Contact', accent: true },
 ];

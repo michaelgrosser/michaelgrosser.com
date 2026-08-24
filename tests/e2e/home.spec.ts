@@ -153,6 +153,20 @@ test('server-reported field errors are shown against the field', async ({ page }
   await expect(page.getByRole('alert')).toBeHidden();
 });
 
+test('an unknown path serves the 404 page, not the home page', async ({ page }) => {
+  const response = await page.goto('/wp-admin');
+
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('This page doesn’t exist.');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, follow');
+  await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+
+  // The nav has to work from here, which root-relative anchors are what buy us.
+  await page.getByRole('link', { name: 'Experience', exact: true }).click();
+  await expect(page).toHaveURL(/\/#experience$/);
+  await expect(page.locator('#experience')).toBeVisible();
+});
+
 for (const width of [1440, 740, 390]) {
   test(`has no detectable accessibility violations at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });

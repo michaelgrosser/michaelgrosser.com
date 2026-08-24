@@ -139,6 +139,19 @@ Secrets. Until both exist the form fails closed with a 500.
 Do not also connect Cloudflare's Workers Builds Git integration. Two pipelines watching
 `main` means every push deploys twice.
 
+### Routing
+
+Cloudflare's asset layer answers first and the Worker is the exception, not the default:
+
+- Anything matching a built file is served from assets — free, and never a Worker call.
+- Anything matching nothing gets `dist/404.html` (`not_found_handling: "404-page"`), so bot
+  traffic hunting `/wp-admin` or `/.env` costs nothing.
+- `run_worker_first: ["/api/contact"]` carves out the single path that must reach the
+  Worker, because it matches no asset and would otherwise be answered with the 404 page.
+
+Adding a server route means adding it to `run_worker_first`, or it will never be reached.
+`scripts/static-server.mjs` mirrors the 404 behaviour so local runs match production.
+
 Preview deployments for pull requests are not set up. `wrangler versions upload` needs the
 Worker to already exist, so it is a follow-up to the first deploy rather than part of it —
 and a preview shares the live Worker's secrets, so a form submission from one sends real

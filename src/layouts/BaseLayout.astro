@@ -16,9 +16,16 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  /** Error pages: keep them out of the index, and out of the sitemap. */
+  noindex?: boolean;
 }
 
-const { title, description = site.description, image = '/og-image.jpg' } = Astro.props;
+const {
+  title,
+  description = site.description,
+  image = '/og-image.jpg',
+  noindex = false,
+} = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url);
 const imageUrl = new URL(image, Astro.site ?? site.url);
@@ -48,8 +55,8 @@ const personSchema = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical.href} />
-    <meta name="robots" content="index, follow" />
+    {!noindex && <link rel="canonical" href={canonical.href} />}
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow'} />
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#f7f8fa" />
 

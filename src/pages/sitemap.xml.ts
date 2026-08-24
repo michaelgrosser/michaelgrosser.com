@@ -8,7 +8,7 @@ import { site } from '../data/site';
 
 const routes = Object.keys(import.meta.glob('./**/*.astro'))
   .map((file) => file.replace(/^\.\//, '').replace(/\.astro$/, ''))
-  .filter((route) => !route.startsWith('_') && !route.includes('['))
+  .filter((route) => !route.startsWith('_') && !route.includes('[') && route !== '404')
   .map((route) => (route === 'index' ? '' : route))
   .sort();
 
