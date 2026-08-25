@@ -2,6 +2,10 @@
 /**
  * Contact form. Posts JSON to the Worker at /api/contact.
  *
+ * On submit the form folds itself into a letter, posts it into the Send button and the
+ * plane flies off — see docs/ui/contact-send-animation.md, which is authoritative for
+ * every timing and keyframe below.
+ *
  * Turnstile needs a site key at build time. `PUBLIC_TURNSTILE_SITE_KEY` is public by
  * design (the secret half lives in Cloudflare); when it is missing the build falls back
  * to Cloudflare's documented always-passes test key and warns, which fails closed in
@@ -51,89 +55,113 @@ if (import.meta.env.PROD && usingTestKey) {
 }
 ---
 
-<form class="form" method="post" novalidate data-contact-form>
-  <div class="form__body" data-form-body>
-    <div class="form__row">
-      <div class="field">
-        <label class="type-mono type-mono-label" for="contact-name">Name</label>
+<div class="send" data-send="wrap" data-phase="idle">
+  <form class="form" method="post" novalidate data-contact-form>
+    <div class="form__body" data-form-body>
+      {/* The sheet is what folds: both field groups and nothing else. */}
+      <div class="form__sheet" data-fold="sheet">
+        <div class="form__row" data-fold="row">
+          <div class="field">
+            <label class="type-mono type-mono-label" for="contact-name">Name</label>
+            <input
+              class="field__control"
+              id="contact-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              maxlength={CONTACT_LIMITS.name}
+              required
+              aria-describedby="contact-name-error"
+            />
+            <p class="field__error" id="contact-name-error" hidden></p>
+          </div>
+
+          <div class="field">
+            <label class="type-mono type-mono-label" for="contact-email">Email</label>
+            <input
+              class="field__control"
+              id="contact-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              maxlength={CONTACT_LIMITS.email}
+              required
+              aria-describedby="contact-email-error"
+            />
+            <p class="field__error" id="contact-email-error" hidden></p>
+          </div>
+        </div>
+
+        <div class="field" data-fold="msg">
+          <label class="type-mono type-mono-label" for="contact-message">Message</label>
+          <textarea
+            class="field__control field__control--message"
+            id="contact-message"
+            name="message"
+            rows="5"
+            maxlength={CONTACT_LIMITS.message}
+            required
+            aria-describedby="contact-message-error"></textarea>
+          <p class="field__error" id="contact-message-error" hidden></p>
+        </div>
+      </div>
+
+      <div class="form__honeypot" aria-hidden="true">
+        <label for="contact-subject">Subject</label>
         <input
-          class="field__control"
-          id="contact-name"
-          name="name"
+          id="contact-subject"
+          name={HONEYPOT_FIELD}
           type="text"
-          autocomplete="name"
-          maxlength={CONTACT_LIMITS.name}
-          required
-          aria-describedby="contact-name-error"
+          tabindex="-1"
+          autocomplete="off"
         />
-        <p class="field__error" id="contact-name-error" hidden></p>
       </div>
 
-      <div class="field">
-        <label class="type-mono type-mono-label" for="contact-email">Email</label>
-        <input
-          class="field__control"
-          id="contact-email"
-          name="email"
-          type="email"
-          autocomplete="email"
-          maxlength={CONTACT_LIMITS.email}
-          required
-          aria-describedby="contact-email-error"
-        />
-        <p class="field__error" id="contact-email-error" hidden></p>
+      <p class="form__status" role="alert" tabindex="-1" data-form-error hidden></p>
+
+      <div class="form__submit">
+        <Button type="submit" size="submit" data-form-submit data-fold="btn">
+          <span class="form__submit-label" data-submit-label data-fold="label">Send</span>
+          <span class="form__plane" data-fold="icon">
+            <Icon name="paper-plane-tilt" size={18} />
+          </span>
+        </Button>
+
+        {/* Sits beside the button so a zero-height widget cannot alter the form's rhythm. */}
+        <div
+          class="cf-turnstile"
+          data-sitekey={turnstileSiteKey}
+          data-appearance="interaction-only"
+        >
+        </div>
       </div>
+
+      <noscript>
+        <p class="type-body form__noscript">
+          Sending this form needs JavaScript. The email button in this section works either way.
+        </p>
+      </noscript>
     </div>
+  </form>
 
-    <div class="field">
-      <label class="type-mono type-mono-label" for="contact-message">Message</label>
-      <textarea
-        class="field__control field__control--message"
-        id="contact-message"
-        name="message"
-        rows="5"
-        maxlength={CONTACT_LIMITS.message}
-        required
-        aria-describedby="contact-message-error"></textarea>
-      <p class="field__error" id="contact-message-error" hidden></p>
-    </div>
-
-    <div class="form__honeypot" aria-hidden="true">
-      <label for="contact-subject">Subject</label>
-      <input
-        id="contact-subject"
-        name={HONEYPOT_FIELD}
-        type="text"
-        tabindex="-1"
-        autocomplete="off"
-      />
-    </div>
-
-    <p class="form__status" role="alert" tabindex="-1" data-form-error hidden></p>
-
-    <div class="form__submit">
-      <Button type="submit" size="submit" data-form-submit>
-        <span data-submit-label>Send</span>
-        <Icon name="paper-plane-tilt" size={18} />
-      </Button>
-
-      {/* Sits beside the button so a zero-height widget cannot alter the form's rhythm. */}
-      <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-appearance="interaction-only">
-      </div>
-    </div>
-
-    <noscript>
-      <p class="type-body form__noscript">
-        Sending this form needs JavaScript. The email button in this section works either way.
-      </p>
-    </noscript>
-  </div>
+  {/* Shown only if the request outlives the animation. */}
+  <p class="type-mono type-mono-label send__holding" data-send-holding hidden>Sending&hellip;</p>
 
   {/* Focused on success: a live region alone is not a reliable announcement. */}
-  <p class="type-body form__success" role="status" tabindex="-1" data-form-success hidden>
-    Thanks &mdash; your message is on its way. I&rsquo;ll reply to the address you gave.
-  </p>
-</form>
+  <div class="send__card" role="status" tabindex="-1" data-sent-card>
+    {/* Wrapped rather than classed: a scoped selector cannot reach inside Icon. */}
+    <span class="send__card-icon">
+      <Icon name="envelope-simple-open" size={30} />
+    </span>
+    <p class="type-title">Message sent.</p>
+    <p class="type-body send__card-copy">
+      Thanks &mdash; it landed in my inbox. I usually reply within a day or two.
+    </p>
+    <button class="type-mono type-mono-label send__again" type="button" data-send-again>
+      Send another
+    </button>
+  </div>
+</div>
 
 <script>
   import {
@@ -147,12 +175,16 @@ if (import.meta.env.PROD && usingTestKey) {
   type FieldName = 'name' | 'email' | 'message';
   const FIELDS: readonly FieldName[] = ['name', 'email', 'message'];
 
+  /** Must match the end of the timeline in docs/ui/contact-send-animation.md. */
+  const SEND_ANIMATION_MS = 1080;
+
   // Deliberately permissive: the Worker is the authority, this only catches typos.
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  const wrap = document.querySelector<HTMLElement>('[data-send="wrap"]');
 
-  if (form) {
+  if (form && wrap) {
     /*
      * Turnstile pulls in a chain of a dozen third-party requests. None of it is needed
      * until someone actually engages with the form, which is well below the fold, so the
@@ -179,11 +211,13 @@ if (import.meta.env.PROD && usingTestKey) {
     form.addEventListener('input', loadTurnstile);
     form.addEventListener('submit', loadTurnstile);
 
-    const body = form.querySelector<HTMLElement>('[data-form-body]');
-    const success = form.querySelector<HTMLElement>('[data-form-success]');
+    const sheet = form.querySelector<HTMLElement>('[data-fold="sheet"]');
     const formError = form.querySelector<HTMLElement>('[data-form-error]');
     const submit = form.querySelector<HTMLButtonElement>('[data-form-submit]');
     const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]');
+    const holding = wrap.querySelector<HTMLElement>('[data-send-holding]');
+    const card = wrap.querySelector<HTMLElement>('[data-sent-card]');
+    const sendAgain = wrap.querySelector<HTMLButtonElement>('[data-send-again]');
 
     const control = (field: string) =>
       form.elements.namedItem(field) as HTMLInputElement | HTMLTextAreaElement | null;
@@ -223,8 +257,9 @@ if (import.meta.env.PROD && usingTestKey) {
     };
 
     /*
-     * `aria-disabled`, not `disabled`: disabling the focused button drops focus to
-     * <body>, which strands anyone submitting from the keyboard.
+     * `aria-disabled`, not `disabled`, for the idle button: disabling the focused element
+     * drops focus to <body>, which strands anyone submitting from the keyboard. Once the
+     * fold starts, the controls really are disabled — see setControlsDisabled.
      */
     let pending = false;
 
@@ -234,7 +269,15 @@ if (import.meta.env.PROD && usingTestKey) {
       if (submitLabel) submitLabel.textContent = value ? 'Sending' : 'Send';
     };
 
-    // Unhide before writing: a live region mutated while display:none may go unannounced.
+    /** Nobody should be able to type into a form that is folding itself up. */
+    const setControlsDisabled = (value: boolean) => {
+      FIELDS.forEach((field) => {
+        const input = control(field);
+        if (input) input.disabled = value;
+      });
+      if (submit) submit.disabled = value;
+    };
+
     /** Gives a late-loading challenge a moment to produce its token. */
     const waitForToken = async (budgetMs = 5000) => {
       const deadline = Date.now() + budgetMs;
@@ -248,12 +291,66 @@ if (import.meta.env.PROD && usingTestKey) {
       return token;
     };
 
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const prefersReducedMotion = () =>
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const setPhase = (phase: 'idle' | 'sending' | 'sent') => wrap.setAttribute('data-phase', phase);
+
+    /*
+     * The packet has to fly to wherever the button actually is, which depends on the
+     * layout at this moment, so the distance is measured rather than assumed. Reserving
+     * the wrapper's height stops the page jumping as the form leaves the flow.
+     */
+    const measureFlight = () => {
+      if (!sheet || !submit) return;
+      const wrapBox = wrap.getBoundingClientRect();
+      const sheetBox = sheet.getBoundingClientRect();
+      const buttonBox = submit.getBoundingClientRect();
+
+      wrap.style.minHeight = `${wrapBox.height}px`;
+      wrap.style.setProperty(
+        '--dx',
+        `${buttonBox.left + buttonBox.width / 2 - (sheetBox.left + sheetBox.width / 2)}px`,
+      );
+      wrap.style.setProperty(
+        '--dy',
+        `${buttonBox.top + buttonBox.height / 2 - (sheetBox.top + sheetBox.height / 2)}px`,
+      );
+    };
+
+    const showSent = () => {
+      if (holding) holding.hidden = true;
+      wrap.style.minHeight = '';
+      setPhase('sent');
+      card?.focus();
+    };
+
+    const restoreIdle = () => {
+      if (holding) holding.hidden = true;
+      wrap.style.minHeight = '';
+      setPhase('idle');
+      setControlsDisabled(false);
+    };
+
     const fail = (message: string) => {
       if (!formError) return;
       formError.hidden = false;
       formError.textContent = message;
       formError.focus();
     };
+
+    sendAgain?.addEventListener('click', () => {
+      FIELDS.forEach((field) => {
+        const input = control(field);
+        if (input) input.value = '';
+      });
+      clearErrors();
+      restoreIdle();
+      window.turnstile?.reset();
+      control('name')?.focus();
+    });
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -268,14 +365,32 @@ if (import.meta.env.PROD && usingTestKey) {
 
       setPending(true);
 
+      // Before the animation, not during: the sequence should never start on a
+      // submission that cannot be sent.
+      const token = await waitForToken();
+
       const payload: Record<string, string> = {
         name: control('name')?.value ?? '',
         email: control('email')?.value ?? '',
         message: control('message')?.value ?? '',
         [HONEYPOT_FIELD]: control(HONEYPOT_FIELD)?.value ?? '',
-        // Deferring the script means the token may still be in flight on a fast submit.
-        token: await waitForToken(),
+        token,
       };
+
+      const animated = !prefersReducedMotion();
+      const startedAt = Date.now();
+      let holdTimer: number | undefined;
+
+      setControlsDisabled(true);
+
+      if (animated) {
+        measureFlight();
+        setPhase('sending');
+        // If the request outlives the flight, say so rather than showing nothing.
+        holdTimer = window.setTimeout(() => {
+          if (holding) holding.hidden = false;
+        }, SEND_ANIMATION_MS);
+      }
 
       try {
         const response = await fetch(CONTACT_ENDPOINT, {
@@ -286,13 +401,15 @@ if (import.meta.env.PROD && usingTestKey) {
         const result = (await response.json().catch(() => null)) as ContactResponse | null;
 
         if (response.ok && result?.ok) {
-          if (body) body.hidden = true;
-          if (success) {
-            success.hidden = false;
-            success.focus();
-          }
+          window.clearTimeout(holdTimer);
+          const remaining = SEND_ANIMATION_MS - (Date.now() - startedAt);
+          if (animated && remaining > 0) await delay(remaining);
+          showSent();
           return;
         }
+
+        window.clearTimeout(holdTimer);
+        restoreIdle();
 
         // Field values are never cleared: a failed send must not cost the visitor their text.
         const entries =
@@ -313,6 +430,8 @@ if (import.meta.env.PROD && usingTestKey) {
           );
         }
       } catch {
+        window.clearTimeout(holdTimer);
+        restoreIdle();
         fail(CONTACT_MESSAGES.failed);
       } finally {
         setPending(false);
@@ -323,9 +442,14 @@ if (import.meta.env.PROD && usingTestKey) {
 </script>
 
 <style>
+  .send {
+    position: relative;
+  }
+
   .form {
     display: flex;
     flex-direction: column;
+    perspective: 1400px;
   }
 
   .form__body {
@@ -334,10 +458,36 @@ if (import.meta.env.PROD && usingTestKey) {
     gap: var(--space-4);
   }
 
+  .form__sheet {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    transform-origin: 50% 100%;
+    transform-style: preserve-3d;
+  }
+
   .form__row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-4);
+    transform-origin: 50% 0%;
+    backface-visibility: hidden;
+  }
+
+  [data-fold='msg'] {
+    transform-origin: 50% 0%;
+    backface-visibility: hidden;
+  }
+
+  .form__submit-label {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .form__plane {
+    display: inline-flex;
+    flex: none;
   }
 
   .field {
@@ -397,8 +547,205 @@ if (import.meta.env.PROD && usingTestKey) {
     margin: 0;
   }
 
-  .form__success {
-    color: var(--color-text);
+  /* ---------- The send sequence. Timings are authoritative in
+     docs/ui/contact-send-animation.md; change them there first. ---------- */
+
+  @keyframes mgFoldPanel {
+    0% {
+      transform: rotateX(0deg);
+      opacity: 1;
+    }
+    70% {
+      opacity: 0.9;
+    }
+    100% {
+      transform: rotateX(-88deg);
+      opacity: 0.55;
+    }
+  }
+
+  @keyframes mgPacket {
+    0% {
+      transform: translate(0px, 0px) scale(1, 1) rotate(0deg);
+      opacity: 1;
+    }
+    28% {
+      transform: translate(0px, 0px) scale(0.94, 0.12) rotate(0deg);
+      opacity: 1;
+    }
+    38% {
+      transform: translate(0px, -10px) scale(0.9, 0.1) rotate(-1deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--dx, 0px), var(--dy, 120px)) scale(0.06, 0.02) rotate(-6deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes mgGulp {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.09, 0.9);
+    }
+    70% {
+      transform: scale(0.97, 1.04);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /*
+   * Reads the button's real padding token, so the keyframe cannot drift from it. The end
+   * colour is the accent at zero alpha rather than `transparent`, which would fade
+   * through grey.
+   */
+  @keyframes mgBtnVanish {
+    0% {
+      background-color: var(--color-accent);
+      padding-left: var(--submit-padding-inline);
+      padding-right: var(--submit-padding-inline);
+    }
+    100% {
+      background-color: var(--color-accent-transparent);
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+  }
+
+  @keyframes mgLabelVanish {
+    0% {
+      opacity: 1;
+      max-width: 120px;
+    }
+    100% {
+      opacity: 0;
+      max-width: 0px;
+    }
+  }
+
+  /* `color`, not `background-color`: the glyph is an inline SVG using currentColor. */
+  @keyframes mgRecolor {
+    from {
+      color: var(--color-text-on-accent);
+    }
+    to {
+      color: var(--color-accent);
+    }
+  }
+
+  @keyframes mgTakeoff {
+    0% {
+      transform: translate(0px, 0px) rotate(0deg) scale(1);
+      opacity: 1;
+    }
+    18% {
+      transform: translate(-5px, 7px) rotate(7deg) scale(1.18);
+      opacity: 1;
+    }
+    46% {
+      transform: translate(70px, -58px) rotate(-8deg) scale(1.05);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(420px, -280px) rotate(-22deg) scale(0.45);
+      opacity: 0;
+    }
+  }
+
+  @keyframes mgSent {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  [data-phase='sending'] .form {
+    pointer-events: none;
+  }
+
+  [data-phase='sending'] [data-fold='msg'] {
+    animation: mgFoldPanel 300ms cubic-bezier(0.6, 0, 0.3, 1) forwards;
+  }
+
+  [data-phase='sending'] [data-fold='row'] {
+    animation: mgFoldPanel 300ms 90ms cubic-bezier(0.6, 0, 0.3, 1) forwards;
+  }
+
+  [data-phase='sending'] [data-fold='sheet'] {
+    animation: mgPacket 500ms 320ms cubic-bezier(0.5, 0, 0.75, 0.3) forwards;
+  }
+
+  [data-phase='sending'] [data-fold='btn'] {
+    animation:
+      mgBtnVanish 112ms cubic-bezier(0.4, 0, 0.2, 1) forwards,
+      mgGulp 120ms 700ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  }
+
+  [data-phase='sending'] [data-fold='label'] {
+    animation: mgLabelVanish 104ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  [data-phase='sending'] [data-fold='icon'] {
+    animation:
+      mgRecolor 96ms cubic-bezier(0.4, 0, 0.2, 1) forwards,
+      mgTakeoff 288ms 780ms cubic-bezier(0.3, 0, 0.45, 1) forwards;
+  }
+
+  /* The form must be gone, or the confirmation stacks under a live form. */
+  [data-phase='sent'] .form {
+    display: none;
+  }
+
+  .send__holding {
+    margin: 0;
+    padding-top: var(--space-2);
+  }
+
+  .send__card {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--card-gap);
+    padding: var(--space-8);
+    background: var(--color-surface-sent);
+    border: var(--border-width-hairline) solid var(--color-border-accent-subtle);
+    border-radius: var(--radius-card);
+  }
+
+  [data-phase='sent'] .send__card {
+    display: flex;
+    animation: mgSent 420ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+
+  .send__card-icon {
+    display: inline-flex;
+    color: var(--color-accent);
+  }
+
+  .send__card-copy {
+    max-width: var(--measure-card);
+    font-size: var(--text-control);
+    line-height: var(--leading-lede);
+  }
+
+  .send__again {
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  .send__again:hover {
+    color: var(--color-accent-strong);
   }
 
   @media (max-width: 700px) {

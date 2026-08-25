@@ -122,6 +122,10 @@ breakpoint list further down does not mention the form; side by side at that wid
 - Items: `2004 — 2009` Florida Gulf Coast University / "Bachelors of Science"; `2021 — 2024` AWS Certified Solutions Architect Professional.
 
 ### 04 Contact (`#contact`)
+
+> The submit interaction is specified separately in
+> [`contact-send-animation.md`](contact-send-animation.md) — the form folds into a
+> letter, flies into the Send button and is replaced by a confirmation card.
 - White background, top border `#DDE1E6`, padding `96px 32px`. Grid `1fr 1fr`, gap 96.
 - Left: mono `04 / CONTACT`; heading "Happy to talk systems, teams, or AI-assisted delivery." (38px/1.08, 600); paragraph "The form reaches me directly. I'm also easy to find in the usual places." (17px, max-width 420px); then a row (gap 12) of four 46×46 icon buttons — email, LinkedIn, X, GitHub — `1px solid #DDE1E6`, radius 10, ink glyphs, hover border oxide-500 + `translateY(-2px)`.
 - Right: form, column gap 16. Name + Email side by side (`1fr 1fr`, gap 16), then Message (`rows=5`, vertical resize). Labels are mono 11px `0.08em` ink-tertiary, uppercase, above each field. Inputs: `1px solid #DDE1E6`, radius 10, padding `14px 16px`, 16px ink text, white fill.

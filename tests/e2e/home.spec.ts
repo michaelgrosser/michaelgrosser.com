@@ -75,7 +75,7 @@ test('the mobile menu opens, navigates, and closes', async ({ page }) => {
 test('the contact form reports its own validation errors', async ({ page }) => {
   await page.goto('/');
 
-  await page.getByRole('button', { name: 'Send' }).click();
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
 
   await expect(page.getByText('Please enter your name.')).toBeVisible();
   await expect(page.getByText('Please enter a valid email address.')).toBeVisible();
@@ -85,7 +85,7 @@ test('the contact form reports its own validation errors', async ({ page }) => {
   await nameField(page).fill('Ada Lovelace');
   await emailField(page).fill('not-an-email');
   await messageField(page).fill('Hello');
-  await page.getByRole('button', { name: 'Send' }).click();
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
 
   await expect(page.getByText('Please enter your name.')).toBeHidden();
   await expect(page.getByText('Please enter a valid email address.')).toBeVisible();
@@ -100,10 +100,54 @@ test('a successful submission replaces the form', async ({ page }) => {
   await nameField(page).fill('Ada Lovelace');
   await emailField(page).fill('ada@example.com');
   await messageField(page).fill('Hello, I would like to talk.');
-  await page.getByRole('button', { name: 'Send' }).click();
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
 
-  await expect(page.getByText('your message is on its way')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Send' })).toBeHidden();
+  const wrap = page.locator('[data-send="wrap"]');
+
+  // The fold runs for 1080ms before the card appears; Playwright waits it out.
+  await expect(page.getByText('Message sent.')).toBeVisible();
+  await expect(wrap).toHaveAttribute('data-phase', 'sent');
+  await expect(page.getByRole('button', { name: 'Send', exact: true })).toBeHidden();
+  await expect(page.getByRole('status')).toBeFocused();
+});
+
+test('reduced motion skips the send animation entirely', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.route('**/api/contact', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
+  );
+  await page.goto('/');
+
+  const wrap = page.locator('[data-send="wrap"]');
+
+  await nameField(page).fill('Ada Lovelace');
+  await emailField(page).fill('ada@example.com');
+  await messageField(page).fill('Hello, I would like to talk.');
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
+
+  await expect(page.getByText('Message sent.')).toBeVisible();
+  // Never passes through the folding state.
+  await expect(wrap).toHaveAttribute('data-phase', 'sent');
+});
+
+test('"send another" returns an empty form', async ({ page }) => {
+  await page.route('**/api/contact', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
+  );
+  await page.goto('/');
+
+  await nameField(page).fill('Ada Lovelace');
+  await emailField(page).fill('ada@example.com');
+  await messageField(page).fill('Hello, I would like to talk.');
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(page.getByText('Message sent.')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Send another' }).click();
+
+  await expect(page.locator('[data-send="wrap"]')).toHaveAttribute('data-phase', 'idle');
+  await expect(nameField(page)).toHaveValue('');
+  await expect(messageField(page)).toHaveValue('');
+  await expect(nameField(page)).toBeEnabled();
 });
 
 test('a failed submission explains itself and keeps what was typed', async ({ page }) => {
@@ -119,12 +163,12 @@ test('a failed submission explains itself and keeps what was typed', async ({ pa
   await nameField(page).fill('Ada Lovelace');
   await emailField(page).fill('ada@example.com');
   await messageField(page).fill('Hello, I would like to talk.');
-  await page.getByRole('button', { name: 'Send' }).click();
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
 
   const alert = page.getByRole('alert');
   await expect(alert).toContainText('Something went wrong sending your message.');
   await expect(messageField(page)).toHaveValue('Hello, I would like to talk.');
-  await expect(page.getByRole('button', { name: 'Send' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Send', exact: true })).toBeEnabled();
   // Keyboard users must not be dumped back at the top of the document.
   await expect(alert).toBeFocused();
 });
@@ -142,7 +186,7 @@ test('server-reported field errors are shown against the field', async ({ page }
   await nameField(page).fill('Ada Lovelace');
   await emailField(page).fill('ada@example.com');
   await messageField(page).fill('Hello, I would like to talk.');
-  await page.getByRole('button', { name: 'Send' }).click();
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
 
   await expect(page.locator('#contact-email-error')).toHaveText(
     'Please enter a valid email address.',

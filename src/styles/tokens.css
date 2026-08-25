@@ -29,6 +29,8 @@
   /* Dark enough to satisfy WCAG 1.4.11 where a border is a control's only boundary. */
   --palette-line-control: #868e99;
 
+  /* A lighter oxide wash than oxide-50; introduced for the sent-confirmation card. */
+  --palette-oxide-25: #fcf6f4;
   --palette-oxide-50: #f8eeeb;
   --palette-oxide-100: #f1ddd7;
   --palette-oxide-500: #b64834;
@@ -43,6 +45,8 @@
   --color-surface-translucent: rgb(255 255 255 / 0.92);
   /* Tinted surface: the hero band and every hover tint. */
   --color-surface-accent: var(--palette-oxide-50);
+  /* The sent-confirmation card, a shade lighter again. */
+  --color-surface-sent: var(--palette-oxide-25);
 
   --color-text: var(--palette-ink);
   --color-text-secondary: var(--palette-slate);
@@ -65,6 +69,11 @@
   --color-accent: var(--palette-oxide-500);
   --color-accent-hover: var(--palette-oxide-600);
   --color-accent-strong: var(--palette-oxide-700);
+  /*
+   * The accent at zero alpha. Animating a background to `transparent` fades through
+   * grey in some engines; fading to the same hue keeps the send animation clean.
+   */
+  --color-accent-transparent: rgb(182 72 52 / 0);
 
   --color-focus-ring: var(--palette-oxide-500);
   --color-error: var(--palette-oxide-700);
@@ -131,6 +140,7 @@
   --measure-lede: 620px;
   --measure-body: 680px;
   --measure-narrow: 420px;
+  --measure-card: 380px;
   --portrait-width: 300px;
   --portrait-width-compact: 260px;
   --portrait-overhang: 128px;
@@ -158,6 +168,7 @@
   /* 15px/normal line box + 2 x 13px = the 44px minimum tap target. */
   --nav-link-padding-block: 13px;
   --credential-padding-top: 20px;
+  --card-gap: 14px;
 
   /* ---------- 6. Shape ---------- */
   --border-width-hairline: 1px;
@@ -165,6 +176,8 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
+  /* The sent-confirmation card. */
+  --radius-card: 12px;
   --radius-xl: 16px;
   --blur-nav: 8px;
 
