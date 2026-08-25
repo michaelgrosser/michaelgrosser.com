@@ -136,8 +136,16 @@ GitHub. They live in Cloudflare, survive every deploy, and are set once: either 
 `wrangler secret put`, or in the dashboard under the Worker's Settings → Variables and
 Secrets. Until both exist the form fails closed with a 500.
 
-Do not also connect Cloudflare's Workers Builds Git integration. Two pipelines watching
-`main` means every push deploys twice.
+**Do not connect Cloudflare's Workers Builds Git integration.** It was connected once, and
+because it builds outside this workflow it had no `PUBLIC_TURNSTILE_SITE_KEY` — so it
+shipped builds carrying the Turnstile _test_ key, and the contact form rejected every
+visitor for a day. It also raced the deploy here and won, overwriting a correct deploy 94
+seconds later. Two pipelines watching `main` means the wrong one can win silently.
+
+To make that failure loud rather than silent, `npm run build` now _fails_ when `CI` is set
+and no site key is configured. A builder nobody configured trips it immediately. The gates
+job opts out with `ALLOW_TURNSTILE_TEST_KEY=1`, because its browser tests never reach
+Cloudflare; local builds only warn.
 
 ### Routing
 
