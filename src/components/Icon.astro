@@ -13,7 +13,7 @@ const icons = import.meta.glob('../icons/*.svg', {
 }) as Record<string, string>;
 
 /** Only these sizes have CSS; adding one means adding a rule below. */
-export type IconSize = 18 | 20 | 22 | 24;
+export type IconSize = 18 | 20 | 22 | 24 | 30;
 
 interface Props {
   name: string;
@@ -63,5 +63,10 @@ if (!markup) {
   .icon[data-size='24'] > :global(svg) {
     width: 24px;
     height: 24px;
+  }
+
+  .icon[data-size='30'] > :global(svg) {
+    width: 30px;
+    height: 30px;
   }
 </style>
