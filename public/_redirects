@@ -1,0 +1,4 @@
+# Retired URLs. Cloudflare's asset layer answers these before the Worker is consulted,
+# so a redirect costs no Worker invocation — same reasoning as not_found_handling in
+# wrangler.jsonc. Format: /from /to status
+/about / 301

@@ -5,10 +5,28 @@ import Experience from '../components/Experience.astro';
 import Expertise from '../components/Expertise.astro';
 import Education from '../components/Education.astro';
 import Contact from '../components/Contact.astro';
+import { PORTRAIT_SIZES, portraitAvif } from '../lib/portrait';
 import { site } from '../data/site';
 ---
 
 <BaseLayout title={`${site.name} — ${site.role}`}>
+  {
+    /*
+    The portrait is the LCP element. Without this, Chrome holds its request behind the
+    render-blocking stylesheet and the fetch does not start for ~500ms on a throttled
+    connection — fetchpriority on the <img> does not help, because the request is not
+    queued at all until then. Same URLs as the <picture>, so nothing loads twice.
+  */
+  }
+  <link
+    slot="head"
+    rel="preload"
+    as="image"
+    type="image/avif"
+    imagesrcset={portraitAvif.srcSet.attribute}
+    imagesizes={PORTRAIT_SIZES}
+    fetchpriority="high"
+  />
   <Hero />
   <Experience />
   <Expertise />
