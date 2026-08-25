@@ -64,19 +64,19 @@ Submissions are never persisted or logged.
 
 ### Before the first deploy
 
-1. **Turnstile.** Create a widget for `michaelgrosser.com`, then:
-   - put the **site key** in `PUBLIC_TURNSTILE_SITE_KEY` — it is public by design, so a
-     local `.env` (see `.env.example`) or the build environment is fine;
-   - store the **secret key**: `npx wrangler secret put TURNSTILE_SECRET_KEY`.
+1. **Turnstile.** The widget already exists, and its **site key is committed** in
+   `src/data/contact.ts`. It is public by design — it ships in the page's HTML — and
+   keeping it in the repo means every build produces a working form with nothing to
+   configure. The widget must list both `www.michaelgrosser.com` and `michaelgrosser.com`
+   as hostnames.
 
-   The Worker refuses every submission while that secret is unset.
+   Only the **secret key** needs installing, and it never enters this repo:
+   `npx wrangler secret put TURNSTILE_SECRET_KEY`. The Worker refuses every submission
+   while it is unset.
 
-   Without the site key the build still succeeds — tests and the review harness need to
-   run anywhere — but it falls back to Cloudflare's always-passes _test_ key, which the
-   production secret rejects. That build would take submissions and drop every one of
-   them, so `npm run check:release` fails on it and `npm run deploy` will not ship it.
-   **Deploy with `npm run deploy`, not `wrangler deploy` directly**, or that check is
-   skipped.
+   `npm run check:release` still refuses to ship a build carrying one of Cloudflare's test
+   site keys, so **deploy with `npm run deploy`, not `wrangler deploy` directly** if you
+   ever deploy by hand.
 
 2. **Email.** Verify `michaelgrosser.com` in Resend and add the DNS records it generates:
    an `MX` and an SPF `TXT` on `send.michaelgrosser.com`, and a DKIM `TXT` at
@@ -121,11 +121,12 @@ has not passed the gates first.
 
 Configure it once, in **Settings → Secrets and variables → Actions**:
 
-| Scope                               | Name                        | Value                                                                                        |
-| ----------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
-| Repository **variable**             | `PUBLIC_TURNSTILE_SITE_KEY` | The Turnstile site key. Public, and pull-request jobs cannot read environment-scoped values. |
-| `production` environment **secret** | `CLOUDFLARE_API_TOKEN`      | An _Edit Cloudflare Workers_ token.                                                          |
-| `production` environment **secret** | `CLOUDFLARE_ACCOUNT_ID`     | Kept beside the token so deploy credentials live in one place.                               |
+| Scope                               | Name                    | Value                                                          |
+| ----------------------------------- | ----------------------- | -------------------------------------------------------------- |
+| `production` environment **secret** | `CLOUDFLARE_API_TOKEN`  | An _Edit Cloudflare Workers_ token.                            |
+| `production` environment **secret** | `CLOUDFLARE_ACCOUNT_ID` | Kept beside the token so deploy credentials live in one place. |
+
+Nothing else — the build itself needs no configuration.
 
 Create the environment under **Settings → Environments**, and restrict its deployment
 branches to `main`. That is what stops a workflow on any other branch from reading the
@@ -137,15 +138,13 @@ GitHub. They live in Cloudflare, survive every deploy, and are set once: either 
 Secrets. Until both exist the form fails closed with a 500.
 
 **Do not connect Cloudflare's Workers Builds Git integration.** It was connected once, and
-because it builds outside this workflow it had no `PUBLIC_TURNSTILE_SITE_KEY` — so it
-shipped builds carrying the Turnstile _test_ key, and the contact form rejected every
-visitor for a day. It also raced the deploy here and won, overwriting a correct deploy 94
+because it built outside this workflow it had no site key — so it shipped builds carrying
+the Turnstile _test_ key, and the contact form rejected every visitor for a day. It also raced the deploy here and won, overwriting a correct deploy 94
 seconds later. Two pipelines watching `main` means the wrong one can win silently.
 
-To make that failure loud rather than silent, `npm run build` now _fails_ when `CI` is set
-and no site key is configured. A builder nobody configured trips it immediately. The gates
-job opts out with `ALLOW_TURNSTILE_TEST_KEY=1`, because its browser tests never reach
-Cloudflare; local builds only warn.
+The site key is now committed rather than injected at build time, so a builder nobody
+configured can no longer produce a broken site — it would build the same working output as
+everything else.
 
 ### Routing
 
