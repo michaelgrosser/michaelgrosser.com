@@ -1,9 +1,8 @@
 ---
 /** Hero band: the only tinted full-bleed surface on the page. */
-import { Picture } from 'astro:assets';
 import Button from './Button.astro';
 import SocialLinks from './SocialLinks.astro';
-import portrait from '../assets/portrait.jpg';
+import { PORTRAIT_SIZES, portraitAvif, portraitFallback, portraitWebp } from '../lib/portrait';
 import { site } from '../data/site';
 ---
 
@@ -13,7 +12,7 @@ import { site } from '../data/site';
       <p class="type-mono type-mono-tracked hero__eyebrow">
         Software Engineering Leader · Chicago, IL
       </p>
-      <h1 class="type-display">Hi, I'm Michael</h1>
+      <h1 class="type-display">Hi, I&rsquo;m Michael</h1>
       <p class="type-lede hero__intro">
         I&rsquo;m a principal software engineer who enjoys turning complicated systems into
         something simpler, faster, and easier to build on. I&rsquo;ve spent 20+ years working across
@@ -25,18 +24,26 @@ import { site } from '../data/site';
       </div>
     </div>
 
-    <Picture
-      pictureAttributes={{ class: 'hero__portrait' }}
-      class="hero__portrait-image"
-      src={portrait}
-      alt={`Portrait of ${site.name}`}
-      widths={[260, 300, 320, 520, 600, 640]}
-      sizes="(max-width: 700px) 320px, (max-width: 1000px) 260px, 300px"
-      formats={['avif', 'webp']}
-      fallbackFormat="jpg"
-      loading="eager"
-      fetchpriority="high"
-    />
+    {
+      /* Written out rather than using <Picture> so it shares one source of URLs with
+        the preload in the document head. See src/lib/portrait.ts. */
+    }
+    <picture class="hero__portrait">
+      <source type="image/avif" srcset={portraitAvif.srcSet.attribute} sizes={PORTRAIT_SIZES} />
+      <source type="image/webp" srcset={portraitWebp.srcSet.attribute} sizes={PORTRAIT_SIZES} />
+      <img
+        class="hero__portrait-image"
+        src={portraitFallback.src}
+        srcset={portraitFallback.srcSet.attribute}
+        sizes={PORTRAIT_SIZES}
+        width={portraitFallback.attributes.width}
+        height={portraitFallback.attributes.height}
+        alt={`Portrait of ${site.name}`}
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </picture>
   </div>
 </section>
 

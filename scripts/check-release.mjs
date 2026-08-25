@@ -7,7 +7,7 @@
  *
  *   node scripts/check-release.mjs
  */
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
@@ -34,8 +34,22 @@ if (!existsSync(DIST)) {
     );
   }
 
-  if (!html.includes('challenges.cloudflare.com')) {
-    failures.push('dist/index.html does not load Turnstile — the form would have no spam check.');
+  if (!html.includes('cf-turnstile') || !/data-sitekey="[^"]+"/.test(html)) {
+    failures.push('dist/index.html has no Turnstile widget — the form would have no spam check.');
+  }
+
+  /*
+   * The script URL used to sit in the HTML. Deferring the challenge moved it into a
+   * bundled chunk, so look across the build rather than in one file — this check failed
+   * every deploy for a day because it was still reading index.html alone.
+   */
+  const scripts = (await readdir(join(DIST, '_astro'))).filter((file) => file.endsWith('.js'));
+  const bundles = await Promise.all(
+    scripts.map((file) => readFile(join(DIST, '_astro', file), 'utf8')),
+  );
+
+  if (![html, ...bundles].some((text) => text.includes('challenges.cloudflare.com'))) {
+    failures.push('nothing in dist/ loads Turnstile — the form would have no spam check.');
   }
 
   if (!existsSync(join(DIST, '_headers'))) {

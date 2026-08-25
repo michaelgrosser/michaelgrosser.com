@@ -24,10 +24,42 @@ const MIME = {
   '.ico': 'image/x-icon',
 };
 
-export function serveDir(dir, port = 0) {
+/**
+ * Cloudflare's asset layer applies _redirects before serving files. Only the exact-path
+ * form is supported here, which is all the file uses.
+ */
+async function loadRedirects(dir) {
+  const redirects = new Map();
+
+  try {
+    const contents = await readFile(join(dir, '_redirects'), 'utf8');
+    for (const line of contents.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const [from, to, status] = trimmed.split(/\s+/);
+      if (from && to) redirects.set(from, { to, status: Number(status) || 302 });
+    }
+  } catch {
+    // No _redirects file; nothing to do.
+  }
+
+  return redirects;
+}
+
+export async function serveDir(dir, port = 0) {
+  const redirects = await loadRedirects(dir);
+
   const server = createServer(async (req, res) => {
     try {
       let path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+
+      const redirect = redirects.get(path);
+      if (redirect) {
+        res.writeHead(redirect.status, { location: redirect.to });
+        res.end();
+        return;
+      }
+
       if (path.endsWith('/')) path += 'index.html';
       const file = join(dir, path);
       if (!file.startsWith(dir)) {

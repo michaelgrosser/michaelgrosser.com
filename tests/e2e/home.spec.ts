@@ -17,7 +17,7 @@ test('renders the page and every section', async ({ page }) => {
   await page.goto('/');
 
   await expect(page).toHaveTitle(/Michael Grosser/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Michael Grosser');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Hi, I['’]m Michael$/);
 
   for (const id of ['top', 'experience', 'technical', 'education', 'contact']) {
     await expect(page.locator(`#${id}`)).toBeVisible();
@@ -151,6 +151,13 @@ test('server-reported field errors are shown against the field', async ({ page }
   await expect(emailField(page)).toBeFocused();
   // A field-level rejection is not a delivery failure; only one message should appear.
   await expect(page.getByRole('alert')).toBeHidden();
+});
+
+test('a retired URL redirects permanently to the home page', async ({ request }) => {
+  const response = await request.get('/about', { maxRedirects: 0 });
+
+  expect(response.status()).toBe(301);
+  expect(response.headers()['location']).toBe('/');
 });
 
 test('an unknown path serves the 404 page, not the home page', async ({ page }) => {

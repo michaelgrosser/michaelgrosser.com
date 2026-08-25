@@ -60,6 +60,9 @@ const personSchema = {
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#f7f8fa" />
 
+    {/* Early in <head> on purpose: a preload here is discovered before the stylesheet. */}
+    <slot name="head" />
+
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
