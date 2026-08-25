@@ -153,6 +153,16 @@ test('server-reported field errors are shown against the field', async ({ page }
   await expect(page.getByRole('alert')).toBeHidden();
 });
 
+test('the built page carries the real Turnstile site key', async ({ page }) => {
+  await page.goto('/');
+
+  const siteKey = await page.locator('.cf-turnstile').getAttribute('data-sitekey');
+
+  // Cloudflare's test keys start 1x/2x/3x and always issue a dummy token, which the
+  // production secret rejects. Shipping one silently breaks every submission.
+  expect(siteKey).toMatch(/^0x/);
+});
+
 test('a retired URL redirects permanently to the home page', async ({ request }) => {
   const response = await request.get('/about', { maxRedirects: 0 });
 

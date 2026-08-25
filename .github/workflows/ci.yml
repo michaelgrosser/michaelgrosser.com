@@ -35,20 +35,12 @@ jobs:
 
       # Built explicitly rather than leaving it to Playwright's webServer, so a build
       # failure reads as a build failure instead of "webServer exited early".
-      #
-      # ALLOW_TURNSTILE_TEST_KEY: these tests never reach Cloudflare, so the test site key
-      # is fine. Without it the build refuses to run in CI without a real key — which is
-      # what catches a build system nobody configured.
       - run: npm run build
-        env:
-          ALLOW_TURNSTILE_TEST_KEY: '1'
 
       - name: Install the browser the e2e suite drives
         run: npx playwright install --with-deps chromium
 
       - run: npm run test:e2e
-        env:
-          ALLOW_TURNSTILE_TEST_KEY: '1'
 
       - name: Keep the failure screenshots when the suite fails
         if: failure()
@@ -84,12 +76,9 @@ jobs:
 
       - run: npm ci
 
-      # The site key is public, so it is a repository variable rather than a secret.
-      # Without it the build falls back to Turnstile's test key and the next step fails.
+      # The site key is committed (src/data/contact.ts), so this needs no configuration.
       - name: Build
         run: npm run build
-        env:
-          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
 
       - name: Refuse a build that cannot work in production
         run: npm run check:release

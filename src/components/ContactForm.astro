@@ -9,46 +9,20 @@
  */
 import Button from './Button.astro';
 import Icon from './Icon.astro';
-import { CONTACT_LIMITS, HONEYPOT_FIELD } from '../data/contact';
+import { CONTACT_LIMITS, HONEYPOT_FIELD, TURNSTILE_SITE_KEY } from '../data/contact';
 
 const TURNSTILE_TEST_SITE_KEY = '1x00000000000000000000AA';
-// `||`, not `??`: an env var set to an empty string is missing, not configured — that
-// would otherwise render data-sitekey="" and fail silently.
-const turnstileSiteKey =
-  import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim() || TURNSTILE_TEST_SITE_KEY;
 
 /*
- * A production build without a real site key produces a form that rejects every visitor:
- * the test key issues a dummy token, and the real secret refuses it. That shipped once,
- * from a second CI builder nobody had configured, and went unnoticed for a day.
+ * The committed key by default, so every build produces a working form.
  *
- * So in CI it is a hard failure. A build system we do not control sets CI and does not
- * set the opt-out, which is exactly the case that needs to fail loudly. The gates job
- * sets ALLOW_TURNSTILE_TEST_KEY because the browser tests never reach Cloudflare, and
- * local builds only warn.
+ * `astro dev` uses the always-passes test key instead: the widget's hostname allowlist
+ * covers www.michaelgrosser.com, not localhost. PUBLIC_TURNSTILE_SITE_KEY overrides both,
+ * for pointing a build at a different widget.
  */
-const usingTestKey = turnstileSiteKey === TURNSTILE_TEST_SITE_KEY;
-const inCI = process.env.CI === 'true' || process.env.CI === '1';
-const testKeyAllowed = process.env.ALLOW_TURNSTILE_TEST_KEY === '1';
-
-if (import.meta.env.PROD && usingTestKey) {
-  const explanation =
-    'PUBLIC_TURNSTILE_SITE_KEY is not set, so this build uses the Turnstile test key. ' +
-    'The production secret rejects the tokens it issues, so every real submission would ' +
-    'fail the spam check.';
-
-  if (inCI && !testKeyAllowed) {
-    throw new Error(
-      `${explanation} Set the variable, or set ALLOW_TURNSTILE_TEST_KEY=1 if this build is ` +
-        'only ever going to be tested and never deployed.',
-    );
-  }
-
-  console.warn(`
-  WARNING: ${explanation}
-  \`npm run deploy\` refuses this build.
-`);
-}
+const turnstileSiteKey =
+  import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim() ||
+  (import.meta.env.DEV ? TURNSTILE_TEST_SITE_KEY : TURNSTILE_SITE_KEY);
 ---
 
 <form class="form" method="post" novalidate data-contact-form>

@@ -10,6 +10,19 @@ export const CONTACT_ENDPOINT = '/api/contact';
 /** Loaded on first interaction with the form, not on page load. */
 export const TURNSTILE_SCRIPT_URL = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
 
+/*
+ * The Turnstile site key for www.michaelgrosser.com.
+ *
+ * Committed on purpose. It is public by definition — it ships in this page's HTML on every
+ * request — and its only protection is the hostname allowlist on the widget itself, so
+ * hiding it buys nothing. Keeping it here instead of in build configuration means any
+ * build produces a working form, with nothing to forget and nothing to drift. A build
+ * without it once shipped a contact form that rejected every visitor for a day.
+ *
+ * The matching secret key is not here. It lives in Cloudflare and never leaves it.
+ */
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAEae2nEk1ogvW-zZ';
+
 export const CONTACT_LIMITS = {
   name: 120,
   /** RFC 5321 caps an address at 254 characters. */
